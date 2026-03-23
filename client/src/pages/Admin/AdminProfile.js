@@ -167,7 +167,7 @@ const CountBadge = ({ count, total, theme }) => (
 // ─────────────────────────────────────────────
 //  REUSABLE: Global Toggle Row
 // ─────────────────────────────────────────────
-const GlobalToggleRow = ({ icon: Icon, label, description, checked, onChange, color, theme }) => {
+const GlobalToggleRow = ({ icon: Icon, label, description, checked, onChange, color, theme, disabled }) => {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -192,7 +192,7 @@ const GlobalToggleRow = ({ icon: Icon, label, description, checked, onChange, co
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 600, color: checked ? '#10b981' : theme.textSecondary }}>{checked ? 'ON' : 'OFF'}</span>
-        <ToggleSwitch checked={checked} onChange={onChange} primaryColor={color} />
+        <ToggleSwitch checked={checked} onChange={onChange} primaryColor={color} disabled={disabled} />
       </div>
     </div>
   );
@@ -232,7 +232,7 @@ const EmailReaderPanel = ({ theme, section, emailUsers, togglingIds, onToggle })
 // ─────────────────────────────────────────────
 //  PANEL: Student Controls
 // ─────────────────────────────────────────────
-const StudentControlPanel = ({ theme, section, studentStates, setStudentStates }) => {
+const StudentControlPanel = ({ theme, section, studentStates, onToggle, updatingControl }) => {
   const features = [
     { id: 'project',         icon: UserCheck,   label: 'project',       description: 'Students can check in without owner approval' },
     { id: 'view_invoice',    icon: BookOpen,    label: 'View Invoices',        description: 'Students can view and download their invoices' },
@@ -247,7 +247,7 @@ const StudentControlPanel = ({ theme, section, studentStates, setStudentStates }
     >
       {features.map(f => (
         <GlobalToggleRow key={f.id} icon={f.icon} label={f.label} description={f.description}
-          checked={!!studentStates[f.id]} onChange={() => setStudentStates(prev => ({ ...prev, [f.id]: !prev[f.id] }))}
+          checked={!!studentStates[f.id]} onChange={() => onToggle(f.id)} disabled={updatingControl === f.id}
           color={section.color} theme={theme} />
       ))}
     </ControlBlock>
@@ -257,7 +257,7 @@ const StudentControlPanel = ({ theme, section, studentStates, setStudentStates }
 // ─────────────────────────────────────────────
 //  PANEL: Global Controls
 // ─────────────────────────────────────────────
-const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, globalEmailOn, globalEmailLoading, onToggleGlobalEmail }) => {
+const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, onToggleMaintenance, updatingControl, globalEmailOn, globalEmailLoading, onToggleGlobalEmail }) => {
   const groups = [
     {
       title: 'System', icon: Zap,
@@ -338,7 +338,7 @@ const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, glo
         <ControlBlock key={group.title} title={group.title} color={section.color} icon={group.icon} theme={theme}>
           {group.controls.map(ctrl => (
             <GlobalToggleRow key={ctrl.id} icon={ctrl.icon} label={ctrl.label} description={ctrl.description}
-              checked={!!globalStates[ctrl.id]} onChange={() => setGlobalStates(prev => ({ ...prev, [ctrl.id]: !prev[ctrl.id] }))}
+              checked={!!globalStates[ctrl.id]} onChange={() => ctrl.id === 'maintenance_mode' ? onToggleMaintenance() : setGlobalStates(prev => ({ ...prev, [ctrl.id]: !prev[ctrl.id] }))} disabled={ctrl.id === 'maintenance_mode' && updatingControl === 'maintenance_mode'}
               color={ctrl.color} theme={theme} />
           ))}
         </ControlBlock>
@@ -363,11 +363,76 @@ const AdminProfile = () => {
   const [globalStates, setGlobalStates]   = useState({ maintenance_mode: false, new_registrations: true, api_access: true });
   const [globalEmailOn, setGlobalEmailOn]         = useState(false);
   const [globalEmailLoading, setGlobalEmailLoading] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [updatingControl, setUpdatingControl]   = useState(null);
 
   const theme = THEME;
   const section = SECTIONS.find(s => s.id === activeSection);
 
   // ── API ──
+  // ── Fetch settings from backend on mount ──
+  const fetchSettings = useCallback(async () => {
+    setSettingsLoading(true);
+    try {
+      const { data } = await axios.get('http://localhost:8083/api/v1/settings');
+      if (data.success && data.data) {
+        const d = data.data;
+        setStudentStates({
+          project:      true,
+          view_invoice: d.studentControls?.view_invoice          ?? true,
+          learning:     d.learningControls?.access_courses       ?? true,
+          edit_profile: d.studentControls?.edit_profile          ?? true,
+          doc_upload:   true,
+        });
+        setGlobalStates(prev => ({
+          ...prev,
+          maintenance_mode: d.maintenanceMode ?? false,
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
+    } finally {
+      setSettingsLoading(false);
+    }
+  }, []);
+
+  // ── Toggle a student control and call backend ──
+  const toggleStudentControl = async (controlId) => {
+    const endpointMap = {
+      view_invoice: '/api/v1/settings/toggle-view-invoice',
+      learning:     '/api/v1/settings/toggle-learning-access',
+      edit_profile: '/api/v1/settings/toggle-edit-profile',
+    };
+    const endpoint = endpointMap[controlId];
+    if (!endpoint) {
+      setStudentStates(prev => ({ ...prev, [controlId]: !prev[controlId] }));
+      return;
+    }
+    setUpdatingControl(controlId);
+    try {
+      await axios.put('http://localhost:8083' + endpoint);
+      setStudentStates(prev => ({ ...prev, [controlId]: !prev[controlId] }));
+    } catch (err) {
+      console.error('Failed to toggle', controlId, err);
+    } finally {
+      setUpdatingControl(null);
+    }
+  };
+
+  // ── Toggle maintenance mode ──
+  const toggleMaintenanceMode = async () => {
+    setUpdatingControl('maintenance_mode');
+    try {
+      const { data } = await axios.put('http://localhost:8083/api/v1/settings/maintenance-mode');
+      setGlobalStates(prev => ({ ...prev, maintenance_mode: data.maintenanceMode }));
+    } catch (err) {
+      console.error('Failed to toggle maintenance mode:', err);
+      setGlobalStates(prev => ({ ...prev, maintenance_mode: !prev.maintenance_mode }));
+    } finally {
+      setUpdatingControl(null);
+    }
+  };
+
   const toggleGlobalEmail = async () => {
     setGlobalEmailLoading(true);
     try {
@@ -405,11 +470,15 @@ const AdminProfile = () => {
     getEmailUsers();
   }, [getEmailUsers]);
 
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
   const renderPanel = () => {
     switch (activeSection) {
       case 'email-reader':     return <EmailReaderPanel    theme={theme} section={section} emailUsers={emailUsers} togglingIds={togglingIds} onToggle={toggleEmailReader} />;
-      case 'student-controls': return <StudentControlPanel theme={theme} section={section} studentStates={studentStates} setStudentStates={setStudentStates} />;
-      case 'global-controls':  return <GlobalControlPanel  theme={theme} section={section} globalStates={globalStates} setGlobalStates={setGlobalStates} globalEmailOn={globalEmailOn} globalEmailLoading={globalEmailLoading} onToggleGlobalEmail={toggleGlobalEmail} />;
+      case 'student-controls': return <StudentControlPanel theme={theme} section={section} studentStates={studentStates} onToggle={toggleStudentControl} updatingControl={updatingControl} />;
+      case 'global-controls':  return <GlobalControlPanel  theme={theme} section={section} globalStates={globalStates} setGlobalStates={setGlobalStates} onToggleMaintenance={toggleMaintenanceMode} updatingControl={updatingControl} globalEmailOn={globalEmailOn} globalEmailLoading={globalEmailLoading} onToggleGlobalEmail={toggleGlobalEmail} />;
       default: return null;
     }
   };
