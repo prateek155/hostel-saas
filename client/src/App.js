@@ -37,7 +37,7 @@ import Learningbox from "./pages/Student/Learningbox";
 import Reportadmin from "./pages/Admin/Reportadmin";
 import Emails from "./pages/Owner/Emails";
 import Setemail from "./pages/Admin/Setemail";
-
+import AdminSystemSettings from "./pages/Admin/AdminSystemSettings";
 function App() {
   return (
     <div className="App">
