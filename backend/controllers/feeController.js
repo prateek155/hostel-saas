@@ -2,6 +2,7 @@
 import feeModel from "../models/feeModel.js";
 import studentModel from "../models/studentModel.js";
 import billModel from "../models/billModel.js";
+import settingModel from "../models/settingModel.js";
 import PDFDocument from "pdfkit";
 
 /* GET FEES BY MONTH */
@@ -121,6 +122,15 @@ export const getStudentPaymentsController = async (req, res) => {
 
 export const downloadBillController = async (req, res) => {
   try {
+    // Check if invoice download is enabled by admin
+    const settings = await settingModel.findOne();
+    if (settings && !settings.studentControls?.view_invoice) {
+      return res.status(403).json({
+        success: false,
+        message: "Invoice download is currently disabled by the admin.",
+      });
+    }
+
     const { month } = req.params;
 
     const bill = await billModel.findOne({

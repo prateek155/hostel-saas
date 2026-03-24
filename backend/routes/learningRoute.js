@@ -1,6 +1,7 @@
 // routes/noteRoutes.js
 import express from "express";
 import { requireSignIn, isStudent } from "../middlewares/authMiddleware.js";
+import { learningWriteGuard } from "../middlewares/learningAccessMiddleware.js";
 import {
     getAllNotes,
     getNoteById,
@@ -20,13 +21,13 @@ router.get('/all-notes',requireSignIn, isStudent, getAllNotes);
 router.get('/notes/:id',requireSignIn, isStudent, getNoteById);
 
 // POST create new note
-router.post('/notes',requireSignIn, isStudent, createNote);
+router.post('/notes',requireSignIn, isStudent, learningWriteGuard, createNote);
 
 // PUT update note
-router.put('/notes/:id',requireSignIn, isStudent, updateNote);
+router.put('/notes/:id',requireSignIn, isStudent, learningWriteGuard, updateNote);
 
 // DELETE note
-router.delete('/notes/:id', requireSignIn, isStudent, deleteNote);
+router.delete('/notes/:id', requireSignIn, isStudent, learningWriteGuard, deleteNote);
 
 // GET archived notes
 router.get('/notes/archived/all',requireSignIn, isStudent,  getArchivedNotes);
