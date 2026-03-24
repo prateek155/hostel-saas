@@ -26,6 +26,7 @@ import projectRoutes from "./backend/routes/projectRoute.js";
 import announcementRoutes from "./backend/routes/announcementRoute.js";
 import learningRoutes from "./backend/routes/learningRoute.js";
 import settingRoutes from "./backend/routes/settingRoute.js";
+import { maintenanceGuard } from "./backend/middlewares/maintenanceMiddleware.js";
 import "./backend/jobs/emailCron.js";
 
 
@@ -90,16 +91,16 @@ app.get("/api/ping", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/hostel", hostelRoutes);
-app.use("/api/v1/student", studentRoutes);
-app.use("/api/v1/room", roomRoutes);
-app.use("/api/v1/attandance", attandanceRoutes);
-app.use("/api/v1/vehicle", vehicleRoutes);
-app.use("/api/v1/fees", feesRoutes);
-app.use("/api/v1/mess", messRoutes);
-app.use("/api/v1/project", projectRoutes);
-app.use("/api/v1/announcement", announcementRoutes);
-app.use("/api/v1/learning", learningRoutes);
+app.use("/api/v1/hostel", maintenanceGuard, hostelRoutes);
+app.use("/api/v1/student", maintenanceGuard, studentRoutes);
+app.use("/api/v1/room", maintenanceGuard, roomRoutes);
+app.use("/api/v1/attandance", maintenanceGuard, attandanceRoutes);
+app.use("/api/v1/vehicle", maintenanceGuard, vehicleRoutes);
+app.use("/api/v1/fees", maintenanceGuard, feesRoutes);
+app.use("/api/v1/mess", maintenanceGuard, messRoutes);
+app.use("/api/v1/project", maintenanceGuard, projectRoutes);
+app.use("/api/v1/announcement", maintenanceGuard, announcementRoutes);
+app.use("/api/v1/learning", maintenanceGuard, learningRoutes);
 app.use("/api/v1/settings", settingRoutes);
 
 // Port
