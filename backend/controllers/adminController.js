@@ -6,7 +6,6 @@ import vehicleModel from "../models/vehicleModel.js";
 import attandanceModel from "../models/attandanceModel.js";
 import fs from "fs";
 import feeModel from "../models/feeModel.js";
-import projectModel from "../models/projectModel.js";
 import ownerEmailModel from "../models/ownerEmailModel.js";
 
 
@@ -357,30 +356,6 @@ export const hostelDistribution = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const projectDistribution = async (req, res) => {
-  try {
-    const data = await projectModel.aggregate([
-      {
-        $group: {
-          _id: "$type",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    res.json({
-      success: true,
-      data,
-    });
-  } catch (error) {
-    console.error("Project distribution error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
   }
 };
 
