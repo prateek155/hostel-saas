@@ -29,7 +29,6 @@ import MessMenu from "./pages/Owner/MessMenu";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import Settings from "./pages/Owner/Settings";
 import DailyMenu from "./pages/Student/DailyMenu";
-import Project from "./pages/Student/Project";
 import Event from "./pages/Event";
 import Projects from "./pages/Projects";
 import Announcement from "./pages/Owner/Announcement";
@@ -94,7 +93,6 @@ function App() {
             <Route index element={<StudentDashboard />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="daily-menu" element={<DailyMenu />} />
-            <Route path="projects" element={<Project />} />
             <Route path="learning" element={<Learningbox />} />
 
           </Route>
