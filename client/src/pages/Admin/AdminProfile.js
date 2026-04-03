@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Building2, Mail, Phone, Menu, X,
-  Users, Globe,
-  BookOpen, Bell, Lock, Zap,
-  ChevronRight, Activity, Shield, Settings,
-  MailCheck, UserCheck,
-  AlertTriangle, Database, Palette
+  Users, Globe,BookOpen, Bell, Zap,
+  ChevronRight, Settings, 
+  AlertTriangle, Palette
 } from 'lucide-react';
 import AdminMenu from '../../components/Layout/AdminMenu';
 import Header from '../../components/Layout/Header';
@@ -234,11 +232,11 @@ const EmailReaderPanel = ({ theme, section, emailUsers, togglingIds, onToggle })
 // ─────────────────────────────────────────────
 const StudentControlPanel = ({ theme, section, studentStates, onToggle, updatingControl }) => {
   const features = [
-    { id: 'project',         icon: UserCheck,   label: 'project',       description: 'Students can check in without owner approval' },
-    { id: 'view_invoice',    icon: BookOpen,    label: 'View Invoices',        description: 'Students can view and download their invoices' },
-    { id: 'learning',        icon: Bell,        label: 'learning',     description: 'Students can submit complaint tickets' },
-    { id: 'edit_profile',    icon: Settings,    label: 'Edit Profile',         description: 'Students can update their own profile info' },
-    { id: 'doc_upload',      icon: Database,    label: 'Document Upload',      description: 'Students can upload ID or KYC documents' },
+   // { id: 'project',         icon: UserCheck,   label: 'project',       description: 'Students can check in without owner approval' },
+    { id: 'view_invoice',    icon: BookOpen,    label: 'View Invoices',        description: 'Students can not download their invoices ( when off )' },
+    { id: 'learning',        icon: Bell,        label: 'learning',     description: 'Students can see only created notes ( when off )' },
+    { id: 'edit_profile',    icon: Settings,    label: 'Edit Profile',         description: 'Students can not update their own profile info ( when off )' },
+    //{ id: 'doc_upload',      icon: Database,    label: 'Document Upload',      description: 'Students can upload ID or KYC documents' },
   ];
   const enabledCount = features.filter(f => studentStates[f.id]).length;
   return (
@@ -270,8 +268,8 @@ const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, onT
       title: 'System', icon: Zap,
       controls: [
         { id: 'maintenance_mode',  icon: AlertTriangle, label: 'Maintenance Mode',   description: 'Puts entire platform in read-only state',          color: '#ef4444' },
-        { id: 'new_registrations', icon: UserCheck,     label: 'New Registrations',  description: 'Allow new hostel owners to register on StayOS',    color: '#10b981' },
-        { id: 'api_access',        icon: Database,      label: 'API Access',          description: 'Enable external API access for all integrations',   color: '#4f8ef7' },
+       // { id: 'new_registrations', icon: UserCheck,     label: 'New Registrations',  description: 'Allow new hostel owners to register on StayOS',    color: '#10b981' },
+       // { id: 'api_access',        icon: Database,      label: 'API Access',          description: 'Enable external API access for all integrations',   color: '#4f8ef7' },
       ]
     }
   ];
@@ -560,7 +558,8 @@ const AdminProfile = () => {
     <div>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; scrollbar-width:none; -ms-overflow-style:none; }
+        *::-webkit-scrollbar { display:none; }
 
         @keyframes spin    { to { transform: rotate(360deg); } }
         @keyframes fadeIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -568,8 +567,8 @@ const AdminProfile = () => {
 
         .ap-root   { display:flex; min-height:100vh; background:${theme.background}; font-family:'DM Sans',sans-serif; position:relative; }
         .ap-sidebar{ flex-shrink:0; position:fixed; left:0; top:0; height:100vh; z-index:1000; transition:transform 0.3s ease; }
-        .ap-main   { flex:1; margin-left:${sidebarOpen ? '280px' : '70px'}; transition:margin-left 0.3s ease; min-height:100vh; display:flex; flex-direction:column; }
-        .ap-content{ padding:28px 28px 60px; flex:1; }
+        .ap-main   { flex:1; margin-left:${sidebarOpen ? '280px' : '70px'}; transition:margin-left 0.3s ease; min-height:100vh; display:flex; flex-direction:column; overflow-x:hidden; }
+        .ap-content{ padding:28px 28px 60px; flex:1; overflow-x:hidden; }
 
         /* Hero */
         .ap-hero { position:relative; overflow:hidden; background:linear-gradient(135deg,${theme.surface} 0%,${theme.background} 100%); border:1px solid ${theme.border}; border-radius:20px; padding:28px 32px; margin-bottom:22px; display:flex; align-items:center; gap:22px; }
@@ -611,7 +610,7 @@ const AdminProfile = () => {
         .ap-nav-item-active .ap-nav-arrow { opacity:1; }
 
         /* Panel */
-        .ap-panel       { animation:fadeIn 0.22s ease both; }
+        .ap-panel       { animation:fadeIn 0.22s ease both; min-width:0; }
         .ap-panel-header{ margin-bottom:18px; display:flex; align-items:center; gap:12px; }
         .ap-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
         .ap-panel-title { font-family:'Syne',sans-serif; font-size:19px; font-weight:800; color:${theme.text}; }
@@ -642,7 +641,7 @@ const AdminProfile = () => {
           .ap-mobile-tabs     { display:flex !important; }
         }
         @media (max-width:640px){
-          .ap-content    { padding:16px 14px 80px; }
+           .ap-content { padding:16px 14px 80px; overflow-x:hidden; }
           .ap-hero       { flex-direction:column; text-align:center; padding:22px 18px; }
           .ap-hero-avatar{ margin:0 auto; }
           .ap-hero-title { font-size:21px; }
@@ -759,7 +758,6 @@ const AdminProfile = () => {
                 </div>
                 {renderPanel()}
               </div>
-
             </div>
           </div>
         </div>

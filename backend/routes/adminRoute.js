@@ -10,7 +10,6 @@ import {
   ownerPhotoController, 
   getAdminDashboardStatsController, 
   hostelDistribution,
-  projectDistribution,
   getHostelWiseOccupancyController,
   addOwnerEmailController,
   toggleEmailReaderController,
@@ -76,13 +75,6 @@ router.get(
   requireSignIn,
   isAdmin,
   hostelDistribution
-);
-
-router.get(
-  "/project-distribution",
-  requireSignIn,
-  isAdmin,
-  projectDistribution
 );
 
 router.get(

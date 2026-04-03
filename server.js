@@ -22,12 +22,14 @@ import attandanceRoutes from "./backend/routes/attandanceRoute.js";
 import vehicleRoutes from "./backend/routes/vehicleRoute.js";
 import feesRoutes from "./backend/routes/feeRoute.js";
 import messRoutes from "./backend/routes/messRoute.js";
-import projectRoutes from "./backend/routes/projectRoute.js";
 import announcementRoutes from "./backend/routes/announcementRoute.js";
 import learningRoutes from "./backend/routes/learningRoute.js";
 import settingRoutes from "./backend/routes/settingRoute.js";
+import systemRoutes from "./backend/routes/systemRoute.js";
 import { maintenanceGuard } from "./backend/middlewares/maintenanceMiddleware.js";
 import "./backend/jobs/emailCron.js";
+import "./backend/jobs/systemCron.js";
+
 
 
 // Config env
@@ -98,10 +100,10 @@ app.use("/api/v1/attandance", maintenanceGuard, attandanceRoutes);
 app.use("/api/v1/vehicle", maintenanceGuard, vehicleRoutes);
 app.use("/api/v1/fees", maintenanceGuard, feesRoutes);
 app.use("/api/v1/mess", maintenanceGuard, messRoutes);
-app.use("/api/v1/project", maintenanceGuard, projectRoutes);
 app.use("/api/v1/announcement", maintenanceGuard, announcementRoutes);
 app.use("/api/v1/learning", maintenanceGuard, learningRoutes);
 app.use("/api/v1/settings", settingRoutes);
+app.use("/api/v1/system", systemRoutes);
 
 // Port
 const PORT = process.env.PORT || 8083;

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import { toast } from "react-toastify";
-import { ChevronDown, LogOut, LayoutDashboard, UserCircle, Bell, Menu, X } from 'lucide-react';
+import { ChevronDown, LogOut, LayoutDashboard, UserCircle, Bell, Menu, X, House, Calendar } from 'lucide-react';
 
 const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSidebarOpen }) => {
   const [auth, setAuth] = useAuth();
@@ -479,16 +479,13 @@ const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSid
                     <LayoutDashboard size={16} /><span>Dashboard</span>
                   </Link>
                   <Link to="/" className="hdr-drop-item">
-                    <UserCircle size={16} /><span>Home</span>
+                    <House size={16} /><span>Home</span>
                   </Link>
                   <Link to={getProfileRoute()} className="hdr-drop-item" onClick={() => setUserDropdownOpen(false)}>
                     <UserCircle size={16} /><span>Profile</span>
                   </Link>
-                  <Link to="/projects" className="hdr-drop-item">
-                    <UserCircle size={16} /><span>Projects</span>
-                  </Link>
                   <Link to="/events" className="hdr-drop-item">
-                    <UserCircle size={16} /><span>Events</span>
+                    <Calendar size={16} /><span>Events</span>
                   </Link>
 
                   <div className="hdr-drop-divider"></div>

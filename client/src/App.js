@@ -26,10 +26,8 @@ import StudentProfile from "./pages/Student/StudentProfile";
 import Vehicle from "./pages/Owner/Vehicle";
 import Fees from "./pages/Owner/Fees";
 import MessMenu from "./pages/Owner/MessMenu";
-import AdminSettings from "./pages/Admin/AdminSettings";
 import Settings from "./pages/Owner/Settings";
 import DailyMenu from "./pages/Student/DailyMenu";
-import Project from "./pages/Student/Project";
 import Event from "./pages/Event";
 import Projects from "./pages/Projects";
 import Announcement from "./pages/Owner/Announcement";
@@ -37,7 +35,7 @@ import Learningbox from "./pages/Student/Learningbox";
 import Reportadmin from "./pages/Admin/Reportadmin";
 import Emails from "./pages/Owner/Emails";
 import Setemail from "./pages/Admin/Setemail";
-import AdminSystemSettings from "./pages/Admin/AdminSystemSettings";
+import SystemReportPage from "./pages/Admin/SystemReportPage";
 function App() {
   return (
     <div className="App">
@@ -81,10 +79,9 @@ function App() {
               <Route path="create-owner" element={<CreateOwner />} />
               <Route path="allstudents" element={<AllStudents />} />
               <Route path="allhostels" element={<AllHostels />} />
-              <Route path="adminsetting" element={<AdminSettings />} />
               <Route path="reports" element={<Reportadmin />} />
               <Route path="emailset" element={<Setemail />} />
-              <Route path="system-settings" element={<AdminSystemSettings />} />
+              <Route path="system-report" element={<SystemReportPage />} />
             </Route>
         </Route>
 
@@ -94,7 +91,6 @@ function App() {
             <Route index element={<StudentDashboard />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="daily-menu" element={<DailyMenu />} />
-            <Route path="projects" element={<Project />} />
             <Route path="learning" element={<Learningbox />} />
 
           </Route>
