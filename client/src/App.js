@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import Pagenotfound from "./pages/Pagenotfound";
 import Login from "./pages/Auth/Login";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 import AdminRoute from "./components/Routes/AdminRoutes";
 import OwnerRoute from "./components/Routes/OwnerRoute";
 import StudentRoute from "./components/Routes/StudentRoute";
@@ -29,7 +30,6 @@ import MessMenu from "./pages/Owner/MessMenu";
 import Settings from "./pages/Owner/Settings";
 import DailyMenu from "./pages/Student/DailyMenu";
 import Event from "./pages/Event";
-import Projects from "./pages/Projects";
 import Announcement from "./pages/Owner/Announcement";
 import Learningbox from "./pages/Student/Learningbox";
 import Reportadmin from "./pages/Admin/Reportadmin";
@@ -44,8 +44,8 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/events" element={<Event />} />
-        <Route path="/projects" element={<Projects />} />
 
 
         {/* 🔓 PUBLIC STUDENT PASSWORD SET */}

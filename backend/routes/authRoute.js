@@ -1,5 +1,6 @@
 import express from "express";
-import { loginController } from "../controllers/authController.js";
+import { loginController,  forgotPasswordController,
+  resetPasswordController } from "../controllers/authController.js";
 
 import {
   requireSignIn,
@@ -18,8 +19,10 @@ const router = express.Router();
  * =========================
  */
 
-// LOGIN (ALL ROLES)
+// LOGIN // forget // reset password (ALL ROLES)
 router.post("/login", loginLimiter, loginController);
+router.post("/forgot-password", forgotPasswordController);
+router.post("/reset-password/:token", resetPasswordController);
 
 /**
  * =========================

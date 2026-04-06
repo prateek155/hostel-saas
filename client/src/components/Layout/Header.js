@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSid
   const [auth, setAuth] = useAuth();
   const navigate = useNavigate();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const themes = {
     default: {
@@ -100,6 +101,23 @@ const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSid
       default: return getDashboardRoute();
     }
   };
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target)
+    ) {
+      setUserDropdownOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   return (
     <>
@@ -453,7 +471,11 @@ const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSid
           </button>
 
           {auth?.user ? (
-            <div className="hdr-user" onClick={() => setUserDropdownOpen(!userDropdownOpen)}>
+              <div
+                ref={dropdownRef}
+                className="hdr-user"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              >
               <div className="hdr-avatar" title={auth.user.name}>
                 {userInitial}
               </div>

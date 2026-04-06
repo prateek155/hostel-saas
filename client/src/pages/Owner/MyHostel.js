@@ -5,8 +5,6 @@ import { toast, ToastContainer  } from "react-toastify";
 import {
   Building2,
   MapPin,
-  BedDouble,
-  DoorOpen,
   CheckCircle,
   User,
   Mail,

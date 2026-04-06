@@ -42,12 +42,6 @@ const StudentMenu = () => {
           icon: <BookOpen />,
           title: "Learning Box",
           description: "Drop any link or video leacture here.",
-        },
-        {
-          path: "/dashboard/student/profile",
-          icon: <BookOpen />,
-          title: "Projects Activity",
-          description: "Manu Real-world projects for working",
         }
       ]
     }

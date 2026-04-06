@@ -702,6 +702,19 @@ return; // 🔴 STOP HERE
             </form>
           </div>
         </div>
+        <div style={{ textAlign: "right", marginTop: "8px" }}>
+  <span
+    style={{
+      color: "#667eea",
+      cursor: "pointer",
+      fontSize: "14px",
+      fontWeight: "500",
+    }}
+    onClick={() => navigate("/forgot-password")}
+  >
+    Forgot Password?
+  </span>
+</div>
       </Layout>
     </>
   );

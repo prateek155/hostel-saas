@@ -22,7 +22,6 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hostelTypeData, setHostelTypeData] = useState([]);
-  const [projectTypeData, setProjectTypeData] = useState([]);
   const [selectedType, setSelectedType] = useState("");
   const [hostelWiseData, setHostelWiseData] = useState([]);
   const [currentTheme, setCurrentTheme] = useState(
@@ -160,29 +159,6 @@ setHostelTypeData(formattedData);
   }
 };
 
-const getProjectDistribution = async () => {
-  try {
-    const res = await axios.get(
-      "http://localhost:8083/api/v1/admin/project-distribution",
-      {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
-        },
-      }
-    );
-
-    if (res.data?.success) {
-      const formatted = res.data.data.map(item => ({
-        name: item._id.toUpperCase(),
-        value: item.count,
-      }));
-      setProjectTypeData(formatted);
-    }
-  } catch (error) {
-    toast.error("Failed to load project distribution");
-  }
-};
-
 const getHostelWiseOccupancy = async (type = "") => {
   try {
     const res = await axios.get(
@@ -213,7 +189,6 @@ const getHostelWiseOccupancy = async (type = "") => {
   getDashboardStats();
   getAllStudents();
   getHostelDistribution();
-  getProjectDistribution();
   getHostelWiseOccupancy(""); // load all types initially
 
 }, [auth?.token]);
@@ -283,39 +258,6 @@ const getHostelWiseOccupancy = async (type = "") => {
             paddingAngle={4}
           >
             {hostelTypeData.map((_, index) => (
-              <Cell
-                key={index}
-                fill={PIE_COLORS[index % PIE_COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    )}
-  </div>
-
-  {/* Project Chart */}
-  <div className="chart-card">
-    <h3 className="chart-title">Project Types Distribution</h3>
-
-    {projectTypeData.length === 0 ? (
-      <p style={{ textAlign: "center", color: "#94a3b8" }}>
-        No project data available
-      </p>
-    ) : (
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={projectTypeData}
-            dataKey="value"
-            cx="50%"
-            cy="50%"
-            innerRadius={70}
-            outerRadius={110}
-            paddingAngle={4}
-          >
-            {projectTypeData.map((_, index) => (
               <Cell
                 key={index}
                 fill={PIE_COLORS[index % PIE_COLORS.length]}

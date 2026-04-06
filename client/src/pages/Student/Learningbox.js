@@ -9,6 +9,7 @@ const Learningbox = () => {
   const [showStylePanel, setShowStylePanel] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [showSidebar, setShowSidebar] = useState(false);
   
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [fontSize, setFontSize] = useState('M');
@@ -59,7 +60,6 @@ const Learningbox = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.token]);
 
-  // Close dropdown menu on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.menu-button') && !event.target.closest('.dropdown-menu-portal')) {
@@ -70,7 +70,6 @@ const Learningbox = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // ── Close style panel when clicking anywhere outside it ──
   useEffect(() => {
     if (!showStylePanel) return;
     const handleOutside = (e) => {
@@ -78,7 +77,6 @@ const Learningbox = () => {
         setShowStylePanel(false);
       }
     };
-    // slight delay so the toggle click doesn't immediately close it
     const timer = setTimeout(() => {
       document.addEventListener('mousedown', handleOutside);
     }, 50);
@@ -87,6 +85,18 @@ const Learningbox = () => {
       document.removeEventListener('mousedown', handleOutside);
     };
   }, [showStylePanel]);
+
+  // Close sidebar on outside click (mobile)
+  useEffect(() => {
+    if (!showSidebar) return;
+    const handleOutside = (e) => {
+      if (!e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle-btn')) {
+        setShowSidebar(false);
+      }
+    };
+    const timer = setTimeout(() => document.addEventListener('click', handleOutside), 50);
+    return () => { clearTimeout(timer); document.removeEventListener('click', handleOutside); };
+  }, [showSidebar]);
 
   const createNewItem = async () => {
     try {
@@ -315,6 +325,7 @@ const Learningbox = () => {
 
   const handleItemClick = (item) => {
     setCurrentItemId(item._id);
+    setShowSidebar(false); // close sidebar on mobile after selecting a note
     if (editorRef.current) {
       editorRef.current.innerHTML = item.content || '';
       setTimeout(() => {
@@ -411,11 +422,15 @@ const Learningbox = () => {
   height: 100vh;
 }
 
+/* ── SIDEBAR ──────────────────────────────── */
 .sidebar {
   width: 256px;
+  min-width: 256px;
   border-right: 1px solid #e5e7eb;
   overflow-y: auto;
   background-color: white;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .sidebar-content { padding: 16px; }
@@ -488,9 +503,14 @@ const Learningbox = () => {
 .menu-item.delete:hover { background-color: #fee2e2; }
 .menu-item-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
+/* ── MAIN EDITOR ──────────────────────────── */
 .main-editor {
-  flex: 1; display: flex; flex-direction: column;
-  background-color: white; width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  width: 0; /* prevents flex overflow */
+  min-width: 0;
 }
 
 .top-bar { border-bottom: 1px solid #e5e7eb; padding: 16px 24px; }
@@ -505,6 +525,23 @@ const Learningbox = () => {
 .delete-button:active { background-color: #fee2e2; color: #dc2626; }
 .delete-icon { width: 20px; height: 20px; }
 .current-date { font-size: 0.875rem; color: #6b7280; }
+
+/* Mobile sidebar toggle button in top bar */
+.sidebar-toggle-btn {
+  display: none;
+  padding: 8px;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-right: 4px;
+}
+.sidebar-toggle-btn:hover { background-color: #f3f4f6; color: #111827; }
+.sidebar-toggle-icon { width: 20px; height: 20px; }
 
 .editor-wrapper { flex: 1; display: flex; overflow: hidden; width: 100%; }
 
@@ -572,15 +609,12 @@ const Learningbox = () => {
 .youtube-source, .social-source { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #9ca3af; }
 .youtube-icon { width: 16px; height: 16px; color: #dc2626; }
 
-/* ═══════════════════════════════════════════
-   STYLE PANEL — matches screenshot exactly
-═══════════════════════════════════════════ */
+/* ── STYLE PANEL ────────────────────────────── */
 .style-panel-wrapper {
   position: relative;
   z-index: 20;
 }
 
-/* The whole floating panel container */
 .style-panel {
   position: fixed;
   right: 0;
@@ -602,7 +636,6 @@ const Learningbox = () => {
 .style-panel:not(.visible) { width: 44px; }
 .style-panel.visible       { width: 268px; }
 
-/* Vertical tab on the left of the panel */
 .style-panel-toggle {
   width: 44px;
   min-width: 44px;
@@ -620,7 +653,6 @@ const Learningbox = () => {
 }
 .style-panel-toggle:hover { background: #f8fafc; }
 
-/* Spiral / settings icon on top of the tab */
 .toggle-icon-svg {
   width: 20px;
   height: 20px;
@@ -628,7 +660,6 @@ const Learningbox = () => {
   flex-shrink: 0;
 }
 
-/* "Style Panel" rotated text */
 .toggle-text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
@@ -641,7 +672,6 @@ const Learningbox = () => {
   user-select: none;
 }
 
-/* Panel body — slides in */
 .style-panel-content {
   width: 224px;
   padding: 20px 18px;
@@ -658,7 +688,6 @@ const Learningbox = () => {
   pointer-events: auto;
 }
 
-/* ── Color grid: 4×3 ── */
 .color-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -677,10 +706,8 @@ const Learningbox = () => {
 .color-button:hover { transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
 .color-button.selected { border-color: #1e293b; transform: scale(1.18); box-shadow: 0 3px 10px rgba(0,0,0,0.22); }
 
-/* ── Divider ── */
 .panel-divider { height: 1px; background: #f1f5f9; margin: 0 -18px; }
 
-/* ── Font size row: S M L XL ── */
 .size-row { display: flex; gap: 6px; }
 .size-button {
   flex: 1;
@@ -698,7 +725,6 @@ const Learningbox = () => {
 .size-button:hover { background: #f1f5f9; border-color: #cbd5e1; color: #374151; }
 .size-button.selected { background: #1e293b; color: white; border-color: #1e293b; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-/* ── Format row: B I U S ── */
 .format-row { display: flex; gap: 6px; }
 .format-button {
   flex: 1; height: 38px; border-radius: 10px;
@@ -714,7 +740,6 @@ const Learningbox = () => {
 .format-button.underline { text-decoration: underline; }
 .format-button.strikethrough { text-decoration: line-through; }
 
-/* ── Align row ── */
 .align-row { display: flex; gap: 6px; }
 .align-button {
   flex: 1; height: 38px; border-radius: 10px;
@@ -726,7 +751,7 @@ const Learningbox = () => {
 .align-button:active { transform: translateY(0); }
 .align-icon { width: 16px; height: 16px; color: #475569; }
 
-/* ── Bottom nav ── */
+/* ── BOTTOM NAV ──────────────────────────── */
 .bottom-nav {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background-color: white; border: 1px solid #e5e7eb;
@@ -751,16 +776,156 @@ const Learningbox = () => {
 .add-icon-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .add-icon { width: 24px; height: 24px; }
 
-@media (max-width: 768px) {
-  .sidebar { width: 200px; }
-  .manager-container { height: calc(100vh - 80px); }
+/* ── MOBILE OVERLAY (sidebar backdrop) ─────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 99;
+}
+
+/* ════════════════════════════════════════════
+   TABLET  (641px – 1023px)
+════════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .top-bar { padding: 12px 16px; }
+
+  .editor-container { padding: 16px; padding-bottom: 100px; }
+
+  .link-previews {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  /* Style panel slightly narrower on tablet */
+  .style-panel.visible { width: 248px; }
+  .style-panel-content { width: 204px; padding: 16px 14px; }
+
+  .bottom-nav { bottom: 16px; }
+  .nav-button { padding: 8px 12px; min-width: 60px; }
+}
+
+/* ════════════════════════════════════════════
+   MOBILE  (≤ 640px)
+════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* Show hamburger button */
+  .sidebar-toggle-btn { display: flex; }
+
+  /* Sidebar slides in as a drawer over content */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 280px;
+    min-width: 280px;
+    z-index: 100;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop overlay shown when sidebar is open */
+  .sidebar-overlay.open { display: block; }
+
+  /* Main editor fills full width */
+  .main-editor { width: 100%; }
+
+  /* Top bar tighter on mobile */
+  .top-bar { padding: 10px 12px; }
+  .top-bar-content { gap: 8px; }
+  .current-date { font-size: 0.75rem; }
+
+  /* Editor padding reduced */
+  .editor-container { padding: 12px 12px 100px 12px; }
+
+  /* Link preview cards stack full width on very small screens */
+  .link-previews {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Style panel: smaller, positioned to not cover content */
+  .style-panel:not(.visible) { width: 38px; }
+  .style-panel.visible { width: 240px; }
+  .style-panel-toggle { width: 38px; min-width: 38px; padding: 16px 0; gap: 8px; }
+  .toggle-icon-svg { width: 17px; height: 17px; }
+  .toggle-text { font-size: 10px; letter-spacing: 0.6px; }
+  .style-panel-content { width: 202px; padding: 14px 12px; gap: 12px; }
+  .color-button { width: 30px; height: 30px; }
+  .color-grid { gap: 8px; }
+  .size-button { height: 34px; font-size: 12px; }
+  .format-button { height: 34px; font-size: 14px; }
+  .align-button { height: 34px; }
+
+  /* Bottom nav: tighter, full-width feel */
+  .bottom-nav {
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px;
+    border-radius: 14px;
+    width: calc(100% - 24px);
+    max-width: 400px;
+  }
+  .bottom-nav-content { gap: 4px; justify-content: space-between; }
+  .nav-button {
+    padding: 6px 8px;
+    min-width: auto;
+    flex: 1;
+    gap: 3px;
+  }
+  .nav-icon { width: 18px; height: 18px; }
+  .nav-label { font-size: 0.65rem; }
+  .add-button {
+    width: 44px; height: 44px;
+    flex: 0 0 44px;
+    margin-left: 4px;
+  }
+  .add-icon { width: 22px; height: 22px; }
+
+  /* Dropdown menu: wider touch targets */
+  .menu-item { padding: 12px 14px; font-size: 0.9rem; }
+}
+
+/* ════════════════════════════════════════════
+   VERY SMALL MOBILE  (≤ 380px)
+════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .sidebar { width: 260px; min-width: 260px; }
+
+  .style-panel.visible { width: 220px; }
+  .style-panel-content { width: 182px; padding: 12px 10px; }
+  .color-button { width: 26px; height: 26px; }
+  .color-grid { gap: 6px; }
+
+  .nav-label { display: none; }
+  .nav-button { padding: 8px 6px; gap: 0; }
+
+  .editor-container { padding: 10px 10px 90px 10px; }
 }
     `}</style>
 
     <div className="content-manager">
       <div className="manager-container">
+
+        {/* MOBILE OVERLAY */}
+        <div
+          className={`sidebar-overlay ${showSidebar ? 'open' : ''}`}
+          onClick={() => setShowSidebar(false)}
+        />
+
         {/* SIDEBAR */}
-        <div className="sidebar">
+        <div className={`sidebar ${showSidebar ? 'open' : ''}`}>
           <div className="sidebar-content">
             <h2 className="sidebar-title">ALL NOTES</h2>
             <div className="notes-list">
@@ -792,6 +957,17 @@ const Learningbox = () => {
         <div className="main-editor">
           <div className="top-bar">
             <div className="top-bar-content">
+              {/* Hamburger — visible only on mobile via CSS */}
+              <button
+                className="sidebar-toggle-btn"
+                onClick={() => setShowSidebar(v => !v)}
+                title="Toggle notes list"
+              >
+                <svg className="sidebar-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
               <button onClick={() => handleDeleteItem(currentItemId)} className="delete-button" title="Delete this note">
                 <Trash2 className="delete-icon" />
               </button>
@@ -887,10 +1063,7 @@ const Learningbox = () => {
             {/* ── STYLE PANEL ── */}
             <div className="style-panel-wrapper">
               <div ref={stylePanelRef} className={`style-panel ${showStylePanel ? 'visible' : ''}`}>
-
-                {/* Tab toggle (left strip of the panel) */}
                 <button onClick={() => setShowStylePanel(v => !v)} className="style-panel-toggle">
-                  {/* Spiral / settings icon */}
                   <svg className="toggle-icon-svg" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -898,9 +1071,7 @@ const Learningbox = () => {
                   <span className="toggle-text">Style Panel</span>
                 </button>
 
-                {/* Panel body */}
                 <div className="style-panel-content">
-                  {/* Colors */}
                   <div className="color-grid">
                     {colors.map((color) => (
                       <button
@@ -914,7 +1085,6 @@ const Learningbox = () => {
 
                   <div className="panel-divider" />
 
-                  {/* Font sizes */}
                   <div className="size-row">
                     {Object.keys(fontSizes).map((size) => (
                       <button
@@ -929,7 +1099,6 @@ const Learningbox = () => {
 
                   <div className="panel-divider" />
 
-                  {/* Format */}
                   <div className="format-row">
                     <button onClick={() => applyFormatting('bold')} className="format-button bold">B</button>
                     <button onClick={() => applyFormatting('italic')} className="format-button italic">I</button>
@@ -939,7 +1108,6 @@ const Learningbox = () => {
 
                   <div className="panel-divider" />
 
-                  {/* Align */}
                   <div className="align-row">
                     <button onClick={() => applyFormatting('justifyLeft')} className="align-button">
                       <svg className="align-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2 4h16v2H2V4zm0 5h10v2H2V9zm0 5h16v2H2v-2z"/></svg>

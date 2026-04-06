@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [weeklyAttendance, setWeeklyAttendance] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState({
     present: 0,
     absent: 0,
@@ -47,6 +48,25 @@ const Dashboard = () => {
       console.error("Attendance fetch error", error);
     }
   };
+
+  const getAnnouncements = async () => {
+  try {
+    const { data } = await axios.get(
+      "http://localhost:8083/api/v1/announcement/all",
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }
+    );
+
+    if (data.success) {
+      setAnnouncements(data.announcements);
+    }
+  } catch (error) {
+    console.log("Announcement fetch error", error);
+  }
+};
 
   const calculateStats = (attendanceData) => {
     const present = attendanceData.filter(a => a.status === "present").length;
@@ -92,6 +112,12 @@ const Dashboard = () => {
       fetchMyAttendance();
     }
   }, [showAttendance, selectedDate]);
+
+  useEffect(() => {
+  if (auth?.token) {
+    getAnnouncements();
+  }
+}, [auth?.token]);
 
   return (
     <Layout tile={"faculty-dashboard"}>
@@ -140,16 +166,37 @@ const Dashboard = () => {
           
           {/* Main Content */}
           <div className="main-content">
-            <div className="section">  
-              {/* Attendance Button */}
-              <button
-                className="attendance-btn"
-                onClick={() => setShowAttendance(true)}
-              >
-                <Calendar size={20} />
-                View My Attendance
-              </button>
-            </div>       
+            <div className="section">
+
+  {/* 🔔 ANNOUNCEMENTS SECTION */}
+  <div className="card shadow-sm p-4 mb-4">
+    <h4>📢 Hostel Announcements</h4>
+
+    {announcements.length === 0 ? (
+      <p>No announcements available</p>
+    ) : (
+      announcements.map((a) => (
+        <div key={a._id} className="announcement-box mb-3 p-3 border rounded">
+          <h5>{a.title}</h5>
+          <p>{a.message}</p>
+          <small>
+            {new Date(a.createdAt).toLocaleString()}
+          </small>
+        </div>
+      ))
+    )}
+  </div>
+
+  {/* Attendance Button */}
+  <button
+    className="attendance-btn"
+    onClick={() => setShowAttendance(true)}
+  >
+    <Calendar size={20} />
+    View My Attendance
+  </button>
+
+</div>      
           </div>
         </div>
       </div>
@@ -540,6 +587,17 @@ const Dashboard = () => {
           padding: 28px;
           overflow-y: auto;
           flex: 1;
+        }
+
+        /* Announcement */
+        .announcement-box {
+         background: #f1f5f9;
+         transition: 0.3s;
+        }
+
+        .announcement-box:hover {
+         background: #e2e8f0;
+         transform: translateY(-2px);
         }
 
         /* Stats Row */

@@ -316,23 +316,24 @@ const AllHostels = () => {
         .hostels-list {
           overflow-y: auto;
           flex: 1;
+          -ms-overflow-style: none;   /* hides scrollbar in IE/Edge */
+          scrollbar-width: none; 
         }
 
         .hostels-list::-webkit-scrollbar {
-          width: 8px;
+          display: none;              /* hides scrollbar in Chrome/Safari */
         }
 
-        .hostels-list::-webkit-scrollbar-track {
-          background: ${theme.surface};
+        /* Replace the existing scrollbar styles for .hostels-list */
+        .hostels-list::-webkit-scrollbar {
+            display: none;
         }
 
-        .hostels-list::-webkit-scrollbar-thumb {
-          background: ${theme.surfaceLight};
-          border-radius: 4px;
-        }
-
-        .hostels-list::-webkit-scrollbar-thumb:hover {
-          background: ${theme.border};
+        .hostels-list {
+            overflow-y: auto;
+            flex: 1;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;     /* Firefox */
         }
 
         .hostel-item {

@@ -1,15 +1,48 @@
 import express from "express";
-import { generateSystemReport, getLatestReport,
-  getAllReports, } from "../controllers/systemReportController.js";
+import {
+  generateSystemReport,
+  getLatestReport,
+  getAllReports,
+  downloadReport,
+  getFileContent,
+  approvePackage,
+  verifyAndUpdate,
+  approveFix,
+  verifyAndFix,
+  getUpdateHistory,
+  getSettings,
+  saveSettings,
+  runNow,
+  runInTen,
+} from "../controllers/systemReportController.js";
 import { requireSignIn, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/generate-report", requireSignIn, isAdmin, generateSystemReport);
-// Get latest report
-router.get("/latest", requireSignIn, isAdmin, getLatestReport);
+// ── Reports
+router.post("/generate-report",  requireSignIn, isAdmin, generateSystemReport);
+router.get("/latest",            requireSignIn, isAdmin, getLatestReport);
+router.get("/all",               requireSignIn, isAdmin, getAllReports);
+router.get("/download/:id",      requireSignIn, isAdmin, downloadReport);
 
-// Get all reports
-router.get("/all", requireSignIn, isAdmin, getAllReports);
+// ── File content viewer (for "view file" on issues)
+router.get("/file-content",      requireSignIn, isAdmin, getFileContent);
+
+// ── Package approval (2-step)
+router.post("/approve-package",  requireSignIn, isAdmin, approvePackage);
+router.post("/verify-key",       requireSignIn, isAdmin, verifyAndUpdate);
+
+// ── Issue fix approval (2-step)
+router.post("/approve-fix",      requireSignIn, isAdmin, approveFix);
+router.post("/verify-fix",       requireSignIn, isAdmin, verifyAndFix);
+
+// ── History & Settings
+router.get("/update-history",    requireSignIn, isAdmin, getUpdateHistory);
+router.get("/settings",          requireSignIn, isAdmin, getSettings);
+router.post("/settings",         requireSignIn, isAdmin, saveSettings);
+
+// ── Manual trigger & scheduling
+router.post("/run-now",          requireSignIn, isAdmin, runNow);
+router.post("/run-in-10",        requireSignIn, isAdmin, runInTen);
 
 export default router;

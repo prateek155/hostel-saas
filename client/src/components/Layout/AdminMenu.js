@@ -112,12 +112,6 @@ const AdminMenu = ({ currentTheme = 'default', sidebarOpen = true }) => {
           description: "Skills filled by students"
         },
         {
-          path: "/dashboard/admin/system-settings",
-          icon: <Settings size={18} />,
-          title: "Settings",
-          description: "Platform configuration"
-        },
-        {
           path: "/dashboard/admin/system-report",
           icon: <Settings size={18} />,
           title: "System Report",
