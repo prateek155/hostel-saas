@@ -19,7 +19,7 @@ const systemReportSchema = new mongoose.Schema(
         issue: String,
       },
     ],
-    errors: [
+    errorLogs: [
       {
         ruleId: String,     // eslint rule id or custom tag
         message: String,    // human-readable description

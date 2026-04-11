@@ -551,6 +551,29 @@ return; // 🔴 STOP HERE
         }
 
         /* ============================================
+           FORGOT PASSWORD LINK
+           ============================================ */
+        .forgot-password-link {
+          display: block;
+          text-align: right;
+          margin-top: 12px;
+          color: #667eea;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: color 0.2s ease;
+          background: none;
+          border: none;
+          padding: 0;
+          outline: none;
+        }
+
+        .forgot-password-link:hover {
+          color: #a78bfa;
+          text-decoration: underline;
+        }
+
+        /* ============================================
            RESPONSIVE DESIGN
            ============================================ */
         @media (max-width: 480px) {
@@ -689,32 +712,30 @@ return; // 🔴 STOP HERE
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={isLocked}
-              >
-                <span className="btn-text">
-                  {isLocked ? "🔒 Account Locked" : "Sign In"}
-                </span>
-                {!isLocked && <span className="btn-arrow">→</span>}
-              </button>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
+                <button
+                  type="button"
+                  className="forgot-password-link"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Forgot Password?
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isLocked}
+                  style={{ width: "auto", padding: "14px 28px" }}
+                >
+                  <span className="btn-text">
+                    {isLocked ? "🔒 Account Locked" : "Sign In"}
+                  </span>
+                  {!isLocked && <span className="btn-arrow">→</span>}
+                </button>
+              </div>
             </form>
           </div>
         </div>
-        <div style={{ textAlign: "right", marginTop: "8px" }}>
-  <span
-    style={{
-      color: "#667eea",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: "500",
-    }}
-    onClick={() => navigate("/forgot-password")}
-  >
-    Forgot Password?
-  </span>
-</div>
       </Layout>
     </>
   );

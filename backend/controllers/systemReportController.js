@@ -9,7 +9,7 @@ import { runCommand } from "../utils/commandRunner.js";
 let restartCron = () => {};
 let scheduleOneShot = () => {};
 try {
-  const cronMod = await import("../cron/systemCron.js");
+  const cronMod = await import("../jobs/systemCron.js");
   if (typeof cronMod.restartCron === "function") restartCron = cronMod.restartCron;
   if (typeof cronMod.scheduleOneShot === "function") scheduleOneShot = cronMod.scheduleOneShot;
 } catch (e) {
