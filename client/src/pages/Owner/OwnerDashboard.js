@@ -4,10 +4,12 @@ import OwnerMenu from "../../components/Layout/OwnerMenu";
 import { useAuth } from "../../context/auth";
 import "react-toastify/dist/ReactToastify.css";
 import { Mail, Building2, X, Menu } from "lucide-react";
+import { useTheme } from "../../context/theme";
 
 const Dashboard = () => {
   const [auth] = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { ownerColor } = useTheme();
   const [ownerStats, setOwnerStats] = useState({
   totalRooms: 0,
   totalStudents: 0,
@@ -404,7 +406,7 @@ useEffect(() => {
 
         .department-badge {
           background: #eff6ff;
-          color: #1d4ed8;
+          color: var(--theme-primary);
           padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
@@ -439,7 +441,7 @@ useEffect(() => {
           transform: translateY(-1px);
         }
 
-        .stat-card.primary { border-left: 4px solid #3b82f6; }
+        .stat-card.primary { border-left: 4px solid var(--theme-primary); }
         .stat-card.secondary { border-left: 4px solid #10b981; }
         .stat-card.accent { border-left: 4px solid #f59e0b; }
 
@@ -1518,7 +1520,7 @@ useEffect(() => {
         button:focus,
         .mobile-member-card:focus,
         .desktop-table tbody tr:focus {
-          outline: 2px solid #3b82f6;
+          outline: 2px solid var(--theme-primary);
           outline-offset: 2px;
         }
 

@@ -1,3 +1,4 @@
+import studentModel from "../models/studentModel.js";
 import attandanceModel from "../models/attandanceModel.js";
 import PDFDocument from "pdfkit";
 
@@ -25,6 +26,12 @@ export const markAttendanceController = async (req, res) => {
         success: false,
         message: "Attendance locked",
       });
+    }
+
+    // FIX 11: verify the student belongs to this owner
+    const belongsToOwner = await studentModel.findOne({ _id: studentId, ownerId });
+    if (!belongsToOwner) {
+      return res.status(403).json({ success: false, message: "Student does not belong to your hostel" });
     }
 
     await attandanceModel.findOneAndUpdate(

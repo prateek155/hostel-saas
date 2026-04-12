@@ -87,6 +87,11 @@ export const markFeePaidController = async (req, res) => {
       return res.status(404).json({ success: false, message: "Fee not found" });
     }
 
+    // FIX 4: verify this fee belongs to the logged-in owner
+    if (fee.ownerId.toString() !== req.user.userId) {
+      return res.status(403).json({ success: false, message: "Not authorized to update this fee" });
+    }
+
     fee.status = "PAID";
     fee.paymentMode = paymentMode;
     fee.paidOn = new Date();

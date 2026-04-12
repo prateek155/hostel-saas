@@ -1,6 +1,6 @@
 import express from "express";
 import { loginController,  forgotPasswordController,
-  resetPasswordController } from "../controllers/authController.js";
+  resetPasswordController, logoutController } from "../controllers/authController.js";
 
 import {
   requireSignIn,
@@ -48,5 +48,7 @@ router.get("/student-auth", requireStudentSignIn, (req, res) => {
     student: req.student,
   });
 });
+
+router.post("/logout", requireSignIn, logoutController);
 
 export default router;

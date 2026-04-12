@@ -5,10 +5,12 @@ import { useAuth } from "../../context/auth";
 import "react-toastify/dist/ReactToastify.css";
 import { Building2, X, Menu, Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 import axios from "axios";
+import { useTheme } from "../../context/theme";
 
 const Dashboard = () => {
   const [auth] = useAuth();
   const [showAttendance, setShowAttendance] = useState(false);
+  const { studentColor } = useTheme();
   const [attendance, setAttendance] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -495,7 +497,7 @@ const Dashboard = () => {
 
         /* Attendance Button */
         .attendance-btn {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary) 100%);
           color: white;
           border: none;
           border-radius: 12px;
@@ -514,7 +516,7 @@ const Dashboard = () => {
         .attendance-btn:hover {
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary) 100%);
         }
 
         /* Modal Styles */
@@ -643,12 +645,12 @@ const Dashboard = () => {
         }
 
         .stat-box.total-stat {
-          border-color: #3b82f6;
+          border-color: var(--theme-primary);
           background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         }
 
         .stat-box.total-stat svg {
-          color: #3b82f6;
+          color: var(--theme-primary);
         }
 
         .stat-info {
@@ -727,7 +729,7 @@ const Dashboard = () => {
 
         .date-input:focus {
           outline: none;
-          border-color: #3b82f6;
+          border-color: var(--theme-primary);
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
@@ -770,7 +772,7 @@ const Dashboard = () => {
         }
 
         .week-day.today {
-          border-color: #3b82f6;
+          border-color: var(--theme-primary);
           background: #eff6ff;
         }
 
@@ -1100,7 +1102,7 @@ const Dashboard = () => {
 
         /* Focus Styles for Accessibility */
         button:focus {
-          outline: 2px solid #3b82f6;
+          outline: 2px solid var(--theme-primary);
           outline-offset: 2px;
         }
 

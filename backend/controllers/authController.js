@@ -1,3 +1,4 @@
+import tokenBlacklistModel from "../models/tokenBlacklistModel.js";
 import userModel from "../models/userModel.js";
 import JWT from "jsonwebtoken";
 import studentModel from "../models/studentModel.js";
@@ -94,7 +95,8 @@ export const forgotPasswordController = async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
 
     user.resetToken = token;
-    user.resetTokenExpire = Date.now() + 10 * 60 * 1000; // 10 min
+    user.resetTokenExpire = Date.now() + 10 * 60 * 1000;   // for userModel
+    user.resetTokenExpiry = Date.now() + 10 * 60 * 1000;   // for studentModel
 
     await user.save();
 
@@ -148,7 +150,7 @@ export const resetPasswordController = async (req, res) => {
     if (!user) {
       user = await studentModel.findOne({
         resetToken: token,
-        resetTokenExpire: { $gt: Date.now() },
+        resetTokenExpiry: { $gt: Date.now() },
       });
     }
 
@@ -159,9 +161,8 @@ export const resetPasswordController = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    user.password = hashedPassword;
+    // FIX: pre-save hook hashes it — no manual hashing here
+    user.password = password;
     user.resetToken = undefined;
     user.resetTokenExpire = undefined;
 
@@ -178,5 +179,25 @@ export const resetPasswordController = async (req, res) => {
       success: false,
       message: "Error resetting password",
     });
+  }
+};
+
+// ISSUE 13 FIX: Logout — blacklist the token so it cannot be reused
+export const logoutController = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const decoded = JWT.decode(token);
+      if (decoded && decoded.exp) {
+        await tokenBlacklistModel.create({
+          token,
+          expiresAt: new Date(decoded.exp * 1000),
+        });
+      }
+    }
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    res.status(200).json({ success: true, message: "Logged out" });
   }
 };

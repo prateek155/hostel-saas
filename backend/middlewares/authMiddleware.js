@@ -1,4 +1,5 @@
 import JWT from "jsonwebtoken";
+import tokenBlacklistModel from "../models/tokenBlacklistModel.js";
 import userModel from "../models/userModel.js";
 
 /**
@@ -19,6 +20,12 @@ export const requireSignIn = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+
+    // ISSUE 13 FIX: reject blacklisted tokens (user already logged out)
+    const isBlacklisted = await tokenBlacklistModel.findOne({ token });
+    if (isBlacklisted) {
+      return res.status(401).json({ success: false, message: "Token has been invalidated. Please login again." });
+    }
 
     const decoded = JWT.verify(token, process.env.JWT_SECRET);
 

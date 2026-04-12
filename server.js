@@ -2,16 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
-import path from "path";
-import fs from "fs";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
+import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
-
-
 import connectDB from "./backend/config/db.js";
 import { startMonthlyAttendanceJob } from "./backend/jobs/monthlyattandance.js";
-// Routes
 import authRoutes from "./backend/routes/authRoute.js";
 import userRoutes from "./backend/routes/userRoutes.js";
 import adminRoutes from "./backend/routes/adminRoute.js";
@@ -26,89 +23,57 @@ import announcementRoutes from "./backend/routes/announcementRoute.js";
 import learningRoutes from "./backend/routes/learningRoute.js";
 import settingRoutes from "./backend/routes/settingRoute.js";
 import systemRoutes from "./backend/routes/systemRoute.js";
-import { maintenanceGuard } from "./backend/middlewares/maintenanceMiddleware.js";
 import "./backend/jobs/emailCron.js";
-import "./backend/jobs/systemCron.js";
 
-
-
-// Config env
 dotenv.config();
-
-// DB connection
 connectDB();
-
 startMonthlyAttendanceJob();
+initCron();
 
-// ES module dirname fix
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// App init
 const app = express();
 
-// Uploads folder
 const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+if (!fs.existsSync(uploadsDir)) { fs.mkdirSync(uploadsDir, { recursive: true }); }
 
-// Middlewares
-// Hide Express technology
-app.disable("x-powered-by");
+// SECURITY: restrict CORS to frontend origin only
+app.use(cors({
+  origin: [process.env.FRONTEND_URL || "http://localhost:3000", "http://localhost:3000"],
+  credentials: true,
+}));
 
-// Security headers
-app.use(helmet());
+// SECURITY: set secure HTTP headers
+app.use(helmet({ contentSecurityPolicy: false }));
 
-// Restrict CORS to frontend
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  })
-);
-
-// Limit request body size
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ limit: "10kb", extended: true }));
-
-
-// Prevent MongoDB injection
+// SECURITY: block MongoDB injection operators in request body/query
 app.use(mongoSanitize());
 
-// Logger
+// SECURITY: limit request body to 10kb to prevent payload attacks
+app.use(express.json({ limit: "10kb" }));
+
 app.use(morgan("dev"));
 
-
-// Static uploads
 app.use("/uploads", express.static(uploadsDir));
 
-// ✅ ADD HERE
-app.get("/api/ping", (req, res) => {
-  res.status(200).send("Server is alive 🚀");
-});
-
-// API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/hostel", maintenanceGuard, hostelRoutes);
-app.use("/api/v1/student", maintenanceGuard, studentRoutes);
-app.use("/api/v1/room", maintenanceGuard, roomRoutes);
-app.use("/api/v1/attandance", maintenanceGuard, attandanceRoutes);
-app.use("/api/v1/vehicle", maintenanceGuard, vehicleRoutes);
-app.use("/api/v1/fees", maintenanceGuard, feesRoutes);
-app.use("/api/v1/mess", maintenanceGuard, messRoutes);
-app.use("/api/v1/announcement", maintenanceGuard, announcementRoutes);
-app.use("/api/v1/learning", maintenanceGuard, learningRoutes);
+app.use("/api/v1/hostel", hostelRoutes);
+app.use("/api/v1/student", studentRoutes);
+app.use("/api/v1/room", roomRoutes);
+app.use("/api/v1/attandance", attandanceRoutes);
+app.use("/api/v1/vehicle", vehicleRoutes);
+app.use("/api/v1/fees", feesRoutes);
+app.use("/api/v1/mess", messRoutes);
+app.use("/api/v1/announcement", announcementRoutes);
+app.use("/api/v1/learning", learningRoutes);
 app.use("/api/v1/settings", settingRoutes);
 app.use("/api/v1/system", systemRoutes);
 
-// Port
-const PORT = process.env.PORT || 8083;
+app.use(express.static(path.join(__dirname, "../client/build")));
+app.get("*", (req, res) => { res.sendFile(path.join(__dirname, "../client/build/index.html")); });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 8083;
+app.listen(PORT, () => { console.log("Server running on port " + PORT); });
