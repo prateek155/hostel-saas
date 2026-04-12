@@ -23,6 +23,7 @@ import announcementRoutes from "./backend/routes/announcementRoute.js";
 import learningRoutes from "./backend/routes/learningRoute.js";
 import settingRoutes from "./backend/routes/settingRoute.js";
 import systemRoutes from "./backend/routes/systemRoute.js";
+import { initCron } from "./backend/jobs/systemCron.js";
 import "./backend/jobs/emailCron.js";
 
 dotenv.config();
