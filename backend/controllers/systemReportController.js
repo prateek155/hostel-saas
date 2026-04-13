@@ -9,13 +9,23 @@ import { runCommand } from "../utils/commandRunner.js";
 /* ── Safe cron import — won't crash if systemCron.js isn't wired yet ── */
 let restartCron = () => {};
 let scheduleOneShot = () => {};
-try {
-  const cronMod = await import("../jobs/systemCron.js");
-  if (typeof cronMod.restartCron === "function") restartCron = cronMod.restartCron;
-  if (typeof cronMod.scheduleOneShot === "function") scheduleOneShot = cronMod.scheduleOneShot;
-} catch (e) {
-  console.log("[Cron] Could not load systemCron.js:", e.message);
-}
+
+(async () => {
+  try {
+    const cronMod = await import("../jobs/systemCron.js");
+
+    if (typeof cronMod.restartCron === "function") {
+      restartCron = cronMod.restartCron;
+    }
+
+    if (typeof cronMod.scheduleOneShot === "function") {
+      scheduleOneShot = cronMod.scheduleOneShot;
+    }
+
+  } catch (e) {
+    console.log("[Cron] Could not load systemCron.js:", e.message);
+  }
+})();
 
 /* ═══════════════════════════════════════════════════════════════════════
    HELPERS

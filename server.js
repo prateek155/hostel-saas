@@ -7,8 +7,15 @@ import mongoSanitize from "express-mongo-sanitize";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+
 import connectDB from "./backend/config/db.js";
+
+// 🔹 Jobs
 import { startMonthlyAttendanceJob } from "./backend/jobs/monthlyattandance.js";
+import { initCron } from "./backend/jobs/systemCron.js";
+import { startEmailCron } from "./backend/jobs/emailCron.js";
+
+// 🔹 Routes
 import authRoutes from "./backend/routes/authRoute.js";
 import userRoutes from "./backend/routes/userRoutes.js";
 import adminRoutes from "./backend/routes/adminRoute.js";
@@ -23,41 +30,35 @@ import announcementRoutes from "./backend/routes/announcementRoute.js";
 import learningRoutes from "./backend/routes/learningRoute.js";
 import settingRoutes from "./backend/routes/settingRoute.js";
 import systemRoutes from "./backend/routes/systemRoute.js";
-import { initCron } from "./backend/jobs/systemCron.js";
-import "./backend/jobs/emailCron.js";
 
 dotenv.config();
-connectDB();
-startMonthlyAttendanceJob();
-initCron();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// 📁 uploads
 const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) { fs.mkdirSync(uploadsDir, { recursive: true }); }
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// SECURITY: restrict CORS to frontend origin only
+// 🔒 Middlewares
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || "http://localhost:3000", "http://localhost:3000"],
+  origin: [process.env.FRONTEND_URL || "http://localhost:3000"],
   credentials: true,
 }));
 
-// SECURITY: set secure HTTP headers
 app.use(helmet({ contentSecurityPolicy: false }));
-
-// SECURITY: block MongoDB injection operators in request body/query
 app.use(mongoSanitize());
-
-// SECURITY: limit request body to 10kb to prevent payload attacks
 app.use(express.json({ limit: "10kb" }));
-
 app.use(morgan("dev"));
 
+// 📂 Static
 app.use("/uploads", express.static(uploadsDir));
 
+// 🚀 Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
@@ -73,8 +74,33 @@ app.use("/api/v1/learning", learningRoutes);
 app.use("/api/v1/settings", settingRoutes);
 app.use("/api/v1/system", systemRoutes);
 
+// 🌐 frontend
 app.use(express.static(path.join(__dirname, "../client/build")));
-app.get("*", (req, res) => { res.sendFile(path.join(__dirname, "../client/build/index.html")); });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
 
 const PORT = process.env.PORT || 8083;
-app.listen(PORT, () => { console.log("Server running on port " + PORT); });
+
+// ✅ SAFE START
+const startServer = async () => {
+  try {
+    console.log("🔌 Connecting DB...");
+    await connectDB();
+    console.log("✅ DB Connected");
+
+    console.log("⚙️ Starting jobs...");
+    startMonthlyAttendanceJob();
+    initCron();
+    startEmailCron(); // 🔥 controlled
+
+    app.listen(PORT, () => {
+      console.log("🚀 Server running on port " + PORT);
+    });
+
+  } catch (error) {
+    console.error("❌ Server failed:", error);
+  }
+};
+
+startServer();
