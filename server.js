@@ -55,6 +55,11 @@ app.use(mongoSanitize());
 app.use(express.json({ limit: "10kb" }));
 app.use(morgan("dev"));
 
+// 🟢 ADD HERE 👇
+app.get("/ping", (req, res) => {
+  res.status(200).send("Server Alive ✅");
+});
+
 // 📂 Static
 app.use("/uploads", express.static(uploadsDir));
 
