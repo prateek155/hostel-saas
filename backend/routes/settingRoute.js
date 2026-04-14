@@ -3,8 +3,6 @@ import { requireSignIn, isAdmin } from "../middlewares/authMiddleware.js";
 import {
   getSettingsController,
   toggleMaintenanceModeController,
-  updateOwnerThemeController,
-  updateStudentThemeController,
   toggleViewInvoiceController,
   toggleEditProfileController,
   toggleLearningAccessController,
@@ -17,10 +15,6 @@ router.get("/", requireSignIn, getSettingsController);
 
 // Toggle maintenance mode
 router.put("/maintenance-mode", requireSignIn, isAdmin, toggleMaintenanceModeController);
-
-// Update themes
-router.put("/owner-theme", requireSignIn, isAdmin, updateOwnerThemeController);
-router.put("/student-theme", requireSignIn, isAdmin, updateStudentThemeController);
 
 // Student control toggles
 router.put("/toggle-view-invoice", requireSignIn, isAdmin, toggleViewInvoiceController);

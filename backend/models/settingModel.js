@@ -8,18 +8,6 @@ const settingsSchema = new mongoose.Schema(
       default: false,
     },
 
-    /* ================= THEMES ================= */
-    ownerTheme: {
-      type: String,
-      default: "blue",
-      enum: ["blue", "green", "purple", "orange"],
-    },
-
-    studentTheme: {
-      type: String,
-      default: "blue",
-      enum: ["blue", "green", "purple", "orange"],
-    },
 
     /* ================= STUDENT CONTROLS ================= */
     studentControls: {
@@ -33,25 +21,6 @@ const settingsSchema = new mongoose.Schema(
       },
     },
 
-    /* ================= PROJECT CONTROLS ================= */
-    projectControls: {
-      create_project: {
-        type: Boolean,
-        default: true,
-      },
-      update_project: {
-        type: Boolean,
-        default: true,
-      },
-      delete_project: {
-        type: Boolean,
-        default: true,
-      },
-      view_project: {
-        type: Boolean,
-        default: true,
-      },
-    },
 
     /* ================= LEARNING CONTROLS ================= */
     learningControls: {

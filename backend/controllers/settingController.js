@@ -42,44 +42,6 @@ export const toggleMaintenanceModeController = async (req, res) => {
 };
 
 /* ─────────────────────────────────────────────────────────
-   PUT  /api/v1/settings/owner-theme
-   Body: { theme: "blue" | "green" | "purple" | "orange" }
-───────────────────────────────────────────────────────── */
-export const updateOwnerThemeController = async (req, res) => {
-  try {
-    const { theme } = req.body;
-    if (!theme) return res.status(400).json({ success: false, message: "Theme is required" });
-
-    const settings = await getOrCreateSettings();
-    settings.ownerTheme = theme;
-    await settings.save();
-    res.status(200).json({ success: true, message: `Owner theme set to ${theme}`, ownerTheme: theme });
-  } catch (error) {
-    console.error("updateOwnerTheme error:", error);
-    res.status(500).json({ success: false, message: "Failed to update owner theme" });
-  }
-};
-
-/* ─────────────────────────────────────────────────────────
-   PUT  /api/v1/settings/student-theme
-   Body: { theme: "blue" | "green" | "purple" | "orange" }
-───────────────────────────────────────────────────────── */
-export const updateStudentThemeController = async (req, res) => {
-  try {
-    const { theme } = req.body;
-    if (!theme) return res.status(400).json({ success: false, message: "Theme is required" });
-
-    const settings = await getOrCreateSettings();
-    settings.studentTheme = theme;
-    await settings.save();
-    res.status(200).json({ success: true, message: `Student theme set to ${theme}`, studentTheme: theme });
-  } catch (error) {
-    console.error("updateStudentTheme error:", error);
-    res.status(500).json({ success: false, message: "Failed to update student theme" });
-  }
-};
-
-/* ─────────────────────────────────────────────────────────
    PUT  /api/v1/settings/toggle-view-invoice
 ───────────────────────────────────────────────────────── */
 export const toggleViewInvoiceController = async (req, res) => {

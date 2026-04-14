@@ -3,8 +3,7 @@ import {
   Building2, Mail, Phone, Menu, X,
   Users, Globe,BookOpen, Bell, Zap,
   ChevronRight, Settings, 
-  AlertTriangle, Palette
-} from 'lucide-react';
+  AlertTriangle } from 'lucide-react';
 import AdminMenu from '../../components/Layout/AdminMenu';
 import Header from '../../components/Layout/Header';
 import { useAuth } from '../../context/auth';
@@ -256,12 +255,6 @@ const StudentControlPanel = ({ theme, section, studentStates, onToggle, updating
 //  PANEL: Global Controls
 // ─────────────────────────────────────────────
 const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, onToggleMaintenance, updatingControl, globalEmailOn, globalEmailLoading, onToggleGlobalEmail, ownerTheme, studentTheme, updatingTheme, updateTheme }) => {
-  const THEME_OPTIONS = [
-    { value: "blue",   label: "Blue",   hex: "#4f8ef7" },
-    { value: "green",  label: "Green",  hex: "#10b981" },
-    { value: "purple", label: "Purple", hex: "#8b5cf6" },
-    { value: "orange", label: "Orange", hex: "#f59e0b" },
-  ];
 
   const groups = [
     {
@@ -349,51 +342,7 @@ const GlobalControlPanel = ({ theme, section, globalStates, setGlobalStates, onT
         </ControlBlock>
       ))}
     
-      {/* ── Theme Pickers ── */}
-      {['owner', 'student'].map(role => {
-        const current = role === 'owner' ? ownerTheme : studentTheme;
-        const isUpdating = updatingTheme === role;
-        const roleLabel = role === 'owner' ? 'Owner Dashboard Theme' : 'Student Dashboard Theme';
-        const roleDesc  = role === 'owner'
-          ? 'Sets the color theme applied to the owner dashboard sidebar'
-          : 'Sets the color theme applied to the student dashboard sidebar';
-        return (
-          <ControlBlock key={role + '-theme'} title={roleLabel} description={roleDesc} color='#8b5cf6' icon={Palette} theme={theme}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: '4px 0' }}>
-              {THEME_OPTIONS.map(opt => {
-                const isActive = current === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => !isUpdating && updateTheme(role, opt.value)}
-                    disabled={isUpdating}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '8px 16px', borderRadius: 10, cursor: isUpdating ? 'not-allowed' : 'pointer',
-                      border: isActive ? '2px solid ' + opt.hex : '2px solid transparent',
-                      background: isActive ? opt.hex + '22' : theme.surfaceMid,
-                      outline: 'none', transition: 'all 0.2s', opacity: isUpdating && !isActive ? 0.5 : 1,
-                    }}
-                  >
-                    <div style={{ width: 14, height: 14, borderRadius: '50%', background: opt.hex, flexShrink: 0,
-                      boxShadow: isActive ? '0 0 0 3px ' + opt.hex + '44' : 'none' }} />
-                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 500,
-                      color: isActive ? opt.hex : theme.textSecondary,
-                      fontFamily: "'DM Sans', sans-serif" }}>{opt.label}</span>
-                    {isActive && isUpdating && (
-                      <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid ' + opt.hex,
-                        borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
-                    )}
-                    {isActive && !isUpdating && (
-                      <span style={{ fontSize: 10, color: opt.hex, fontWeight: 700 }}>✓</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </ControlBlock>
-        );
-      })}
+      
 
     </>
   );
