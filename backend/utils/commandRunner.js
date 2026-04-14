@@ -2,10 +2,13 @@ import { exec } from "child_process";
 
 /**
  * Runs a shell command and always resolves (never rejects).
- * Key fix: npm outdated exits with code 1 when packages ARE outdated —
- * that is not an error. We capture stdout regardless of exit code.
+ * ✅ Fixes:
+ * - Handles npm outdated / audit exit code 1 correctly
+ * - Returns ONLY valid JSON (prevents Mongo CastError)
+ * - Handles stderr safely
+ * - Prevents malformed output
  */
-export const runCommand = (command, cwdPath, timeoutMs = 30000) => {
+export const runCommand = (command, cwdPath, timeoutMs = 60000) => {
   return new Promise((resolve) => {
     const proc = exec(
       command,
@@ -13,35 +16,51 @@ export const runCommand = (command, cwdPath, timeoutMs = 30000) => {
         cwd: cwdPath,
         shell: true,
         timeout: timeoutMs,
-        maxBuffer: 1024 * 1024 * 10, // 10 MB — audit output can be large
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       },
       (error, stdout, stderr) => {
-        // Always prefer stdout — even when exit code != 0.
-        // npm outdated / npm audit return exit code 1 on findings, but the
-        // JSON data we need is still in stdout.
-        if (stdout && stdout.trim()) return resolve(stdout.trim());
+        // ✅ 1. Try stdout first
+        if (stdout && stdout.trim()) {
+          let output = stdout.trim();
 
-        // Some tools write to stderr on success (e.g. eslint with --format json
-        // writes to stdout, but other tools differ)
-        if (stderr && stderr.trim()) {
-          // Only resolve with stderr if it looks like JSON or useful data,
-          // not a generic error message
-          const s = stderr.trim();
-          if (s.startsWith("{") || s.startsWith("[")) return resolve(s);
+          try {
+            JSON.parse(output); // validate JSON
+            return resolve(output); // ✅ only valid JSON allowed
+          } catch {
+            console.log(`[runCommand] Invalid JSON from stdout for "${command}"`);
+          }
         }
 
-        // Log actual command failures for debugging
+        // ✅ 2. Try stderr (some tools output JSON here)
+        if (stderr && stderr.trim()) {
+          const s = stderr.trim();
+
+          if (s.startsWith("{") || s.startsWith("[")) {
+            try {
+              JSON.parse(s);
+              return resolve(s); // ✅ valid JSON from stderr
+            } catch {
+              console.log(`[runCommand] Invalid JSON from stderr for "${command}"`);
+            }
+          }
+        }
+
+        // ⚠️ Log real errors (but don't crash)
         if (error && !stdout) {
           console.log(`[runCommand] "${command}" in "${cwdPath}" — ${error.message}`);
         }
 
+        // ❌ fallback → return empty (safe)
         resolve("");
       }
     );
 
-    // Safety: kill the process if it hangs
+    // ✅ Timeout safety
     setTimeout(() => {
-      try { proc.kill(); } catch {}
+      try {
+        proc.kill();
+      } catch {}
+
       console.log(`[runCommand] Timeout: "${command}"`);
       resolve("");
     }, timeoutMs + 1000);

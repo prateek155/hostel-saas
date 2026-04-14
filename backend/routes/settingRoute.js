@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 // GET all settings
-router.get("/", requireSignIn, isAdmin, getSettingsController);
+router.get("/", requireSignIn, getSettingsController);
 
 // Toggle maintenance mode
 router.put("/maintenance-mode", requireSignIn, isAdmin, toggleMaintenanceModeController);

@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+/* 🧠 FIX: Prevent model overwrite / caching issue */
+delete mongoose.models.SystemReport;
+delete mongoose.models.PendingKey;
+delete mongoose.models.UpdateHistory;
+delete mongoose.models.SystemSettings;
+
 // ─── System Report ────────────────────────────────────────────────────
 const systemReportSchema = new mongoose.Schema(
   {
@@ -19,15 +25,15 @@ const systemReportSchema = new mongoose.Schema(
         issue: String,
       },
     ],
-    errorLogs: [
+    errors: [
       {
-        ruleId: String,     // eslint rule id or custom tag
-        message: String,    // human-readable description
-        file: String,       // relative file path  e.g. "server.js"
-        line: Number,       // line number (1-based)
-        column: Number,     // column number
-        source: String,     // the actual code snippet on that line
-        fixable: Boolean,   // whether ESLint --fix can auto-fix this
+        ruleId: String,
+        message: String,
+        file: String,
+        line: Number,
+        column: Number,
+        source: String,
+        fixable: Boolean,
       },
     ],
     warnings: [
@@ -45,45 +51,54 @@ const systemReportSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const SystemReport = mongoose.model("SystemReport", systemReportSchema);
+export const SystemReport =
+  mongoose.models.SystemReport ||
+  mongoose.model("SystemReport", systemReportSchema);
 
 // ─── Pending Security Keys ─────────────────────────────────────────────
 const pendingKeySchema = new mongoose.Schema(
   {
     key: { type: String, required: true },
-    type: { type: String, enum: ["package-update", "issue-fix"], default: "package-update" },
-    // Package update fields
+    type: {
+      type: String,
+      enum: ["package-update", "issue-fix"],
+      default: "package-update",
+    },
     packageName: String,
     currentVersion: String,
     latestVersion: String,
-    // Issue fix fields
-    fixType: String,        // "error" | "warning" | "all"
-    targetFile: String,     // file path or "all"
-    fixCommand: String,     // the command that will run after key verified
-    issueCount: Number,     // how many issues this fix covers
-    //
+    fixType: String,
+    targetFile: String,
+    fixCommand: String,
+    issueCount: Number,
     used: { type: Boolean, default: false },
-    expiresAt: { type: Date, default: () => new Date(Date.now() + 30 * 60 * 1000) },
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 30 * 60 * 1000),
+    },
   },
   { timestamps: true }
 );
 
-export const PendingKey = mongoose.model("PendingKey", pendingKeySchema);
+export const PendingKey =
+  mongoose.models.PendingKey ||
+  mongoose.model("PendingKey", pendingKeySchema);
 
 // ─── Update / Fix History ──────────────────────────────────────────────
 const updateHistorySchema = new mongoose.Schema(
   {
-    actionType: { type: String, enum: ["package-update", "issue-fix"], default: "package-update" },
-    // Package update
+    actionType: {
+      type: String,
+      enum: ["package-update", "issue-fix"],
+      default: "package-update",
+    },
     packageName: String,
     fromVersion: String,
     toVersion: String,
-    // Issue fix
     fixType: String,
     targetFile: String,
     issuesFixed: Number,
     fixOutput: String,
-    //
     securityKey: String,
     authorizedBy: { type: String, default: "admin" },
     status: { type: String, default: "success" },
@@ -91,7 +106,9 @@ const updateHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const UpdateHistory = mongoose.model("UpdateHistory", updateHistorySchema);
+export const UpdateHistory =
+  mongoose.models.UpdateHistory ||
+  mongoose.model("UpdateHistory", updateHistorySchema);
 
 // ─── System Settings ───────────────────────────────────────────────────
 const systemSettingsSchema = new mongoose.Schema(
@@ -103,6 +120,6 @@ const systemSettingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const SystemSettings = mongoose.model("SystemSettings", systemSettingsSchema);
-
-export default SystemReport;
+export const SystemSettings =
+  mongoose.models.SystemSettings ||
+  mongoose.model("SystemSettings", systemSettingsSchema);

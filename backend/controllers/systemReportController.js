@@ -4,6 +4,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
 import { SystemReport, PendingKey, UpdateHistory, SystemSettings } from "../models/systemReportModel.js";
+import userModel from "../models/userModel.js";   // ✅ ADDED: needed for admin email fallback
 import { runCommand } from "../utils/commandRunner.js";
 
 /* ── Safe cron import — won't crash if systemCron.js isn't wired yet ── */
@@ -13,15 +14,8 @@ let scheduleOneShot = () => {};
 (async () => {
   try {
     const cronMod = await import("../jobs/systemCron.js");
-
-    if (typeof cronMod.restartCron === "function") {
-      restartCron = cronMod.restartCron;
-    }
-
-    if (typeof cronMod.scheduleOneShot === "function") {
-      scheduleOneShot = cronMod.scheduleOneShot;
-    }
-
+    if (typeof cronMod.restartCron === "function")    restartCron    = cronMod.restartCron;
+    if (typeof cronMod.scheduleOneShot === "function") scheduleOneShot = cronMod.scheduleOneShot;
   } catch (e) {
     console.log("[Cron] Could not load systemCron.js:", e.message);
   }
@@ -30,13 +24,24 @@ let scheduleOneShot = () => {};
 /* ═══════════════════════════════════════════════════════════════════════
    HELPERS
 ═══════════════════════════════════════════════════════════════════════ */
+
+// ✅ FIX 3: Now checks SystemSettings → User model (admin) → env variable
 const getAdminEmail = async () => {
   try {
+    // 1. Check SystemSettings first (admin can override from UI)
     const s = await SystemSettings.findOne();
-    return s?.adminEmail || process.env.ADMIN_EMAIL || "";
-  } catch { return process.env.ADMIN_EMAIL || ""; }
+    if (s?.adminEmail) return s.adminEmail;
+    // 2. Fallback: find admin user in the User collection
+    const adminUser = await userModel.findOne({ role: "admin" }).select("email");
+    if (adminUser?.email) return adminUser.email;
+    // 3. Final fallback: environment variable
+    return process.env.ADMIN_EMAIL || "";
+  } catch {
+    return process.env.ADMIN_EMAIL || "";
+  }
 };
 
+// ✅ FIX 2: pdfBuffer is now actually attached to the email as an attachment
 const sendMail = async (to, subject, html, pdfBuffer = null) => {
   if (!to || !process.env.MAIL_USER || !process.env.MAIL_PASS) {
     console.log("[Mail] Skipping — MAIL_USER/MAIL_PASS not set or no recipient");
@@ -49,14 +54,26 @@ const sendMail = async (to, subject, html, pdfBuffer = null) => {
       secure: false,
       auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
     });
-    await t.sendMail({ from: `"StayOS Security" <${process.env.MAIL_USER}>`, to, subject, html });
-    console.log("[Mail] Sent to", to);
+    const mailOptions = {
+      from: `"StayOS Security" <${process.env.MAIL_USER}>`,
+      to,
+      subject,
+      html,
+    };
+    // Attach PDF when provided
+    if (pdfBuffer) {
+      mailOptions.attachments = [{
+        filename: `stayos-audit-${new Date().toISOString().split("T")[0]}.pdf`,
+        content: pdfBuffer,
+        contentType: "application/pdf",
+      }];
+    }
+    await t.sendMail(mailOptions);
+    console.log("[Mail] Sent to", to, pdfBuffer ? "(with PDF attachment)" : "");
   } catch (err) {
-    console.log("[Mail] Error:", err.message); // never let mail crash the main flow
+    console.log("[Mail] Error:", err.message);
   }
 };
-
-/* Safe 6-digit key — works on all Node versions */
 
 /* PDF Report Generator */
 const generatePDFBuffer = (report) => new Promise((resolve, reject) => {
@@ -112,6 +129,7 @@ const generatePDFBuffer = (report) => new Promise((resolve, reject) => {
     doc.end();
   } catch (err) { reject(err); }
 });
+
 const generateKey = () => {
   try {
     return String(crypto.randomInt(100000, 999999));
@@ -120,37 +138,31 @@ const generateKey = () => {
   }
 };
 
-/* ─── File path resolver ─────────────────────────────────────────────
-   Given a stored relative path like "backend/controllers/foo.js"
-   return the absolute path on disk.                                   */
 const resolveFilePath = (relPath) => {
   if (!relPath) return null;
-  // Strip the label prefix (backend/ or client/) if present
   const withoutLabel = relPath.replace(/^(backend|client)\//, "");
   const abs = path.resolve(process.cwd(), withoutLabel);
-  // Safety check — must be inside cwd
   if (!abs.startsWith(process.cwd())) return null;
   return abs;
 };
 
-/* ─── ESLint / regex scanner ─────────────────────────────────────────*/
 const SCAN_EXTS = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"];
 const SKIP_DIRS = ["node_modules", ".git", "dist", "build", ".next", "coverage", ".cache"];
 
 const WARN_PATTERNS = [
-  { re: /console\.(log|warn|info|debug)\s*\(/, ruleId: "no-console",       msg: "console statement found",                       fixable: true  },
-  { re: /TODO[:\s]/i,                          ruleId: "no-todo",           msg: "TODO comment found",                            fixable: false },
-  { re: /FIXME[:\s]/i,                         ruleId: "no-fixme",          msg: "FIXME comment found",                           fixable: false },
-  { re: /\bvar\s+\w/,                          ruleId: "no-var",            msg: "Use of 'var' — prefer const/let",               fixable: true  },
-  { re: /[^=!<>]==(?!=)/,                      ruleId: "eqeqeq",            msg: "Use === instead of ==",                         fixable: true  },
-  { re: /\beval\s*\(/,                         ruleId: "no-eval",           msg: "Use of eval() is a security risk",              fixable: false },
-  { re: /\bdebugger\b/,                        ruleId: "no-debugger",       msg: "debugger statement found",                      fixable: true  },
-  { re: /process\.env\.\w+(?!\s*[\|\&\?])/,   ruleId: "no-raw-env",        msg: "Unguarded process.env — add a fallback value",  fixable: false },
+  { re: /console\.(log|warn|info|debug)\s*\(/, ruleId: "no-console",   msg: "console statement found",                      fixable: true  },
+  { re: /TODO[:\s]/i,                          ruleId: "no-todo",      msg: "TODO comment found",                           fixable: false },
+  { re: /FIXME[:\s]/i,                         ruleId: "no-fixme",     msg: "FIXME comment found",                          fixable: false },
+  { re: /\bvar\s+\w/,                          ruleId: "no-var",       msg: "Use of 'var' — prefer const/let",              fixable: true  },
+  { re: /[^=!<>]==(?!=)/,                      ruleId: "eqeqeq",       msg: "Use === instead of ==",                        fixable: true  },
+  { re: /\beval\s*\(/,                         ruleId: "no-eval",      msg: "Use of eval() is a security risk",             fixable: false },
+  { re: /\bdebugger\b/,                        ruleId: "no-debugger",  msg: "debugger statement found",                     fixable: true  },
+  { re: /process\.env\.\w+(?!\s*[\|\&\?])/,   ruleId: "no-raw-env",   msg: "Unguarded process.env — add a fallback value", fixable: false },
 ];
 
 const ERROR_PATTERNS = [
-  { re: /\bawait\b(?![^{]*\bcatch\b)(?![^{]*\btry\b)/,  ruleId: "no-unhandled-await",   msg: "await without surrounding try/catch",           fixable: false },
-  { re: /throw\s+['"`][^'"`;]+['"`]/,                   ruleId: "no-string-throw",       msg: "Throwing a string instead of Error object",    fixable: false },
+  { re: /\bawait\b(?![^{]*\bcatch\b)(?![^{]*\btry\b)/,  ruleId: "no-unhandled-await", msg: "await without surrounding try/catch",        fixable: false },
+  { re: /throw\s+['"`][^'"`;]+['"`]/,                   ruleId: "no-string-throw",    msg: "Throwing a string instead of Error object",  fixable: false },
 ];
 
 const runEslint = async (dirPath, label) => {
@@ -216,55 +228,99 @@ const regexScan = (dirPath, label) => {
   return { errors, warnings };
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   1. GENERATE REPORT  POST /generate-report
-   Each section is wrapped in its own try/catch so one failure never
-   causes a 500 on the whole endpoint.
-═══════════════════════════════════════════════════════════════════════ */
 export const generateSystemReport = async (req, res) => {
   let dependencies = [], security = [], errors = [], warnings = [];
 
-  /* ── Dependency scan ── */
   const backendPath = process.cwd();
   const clientPath = path.join(process.cwd(), "client");
+
+  /* ── Dependency scan ── */
   for (const p of [{ name: "backend", path: backendPath }, { name: "client", path: clientPath }]) {
     if (!fs.existsSync(p.path)) continue;
     try {
       const result = await runCommand("npm outdated --json", p.path, 30000);
       if (!result?.trim()) continue;
-      let data;
-      try { data = JSON.parse(result); } catch (e) { console.log("[Deps] Parse error", p.name, e.message); continue; }
-      if (!data || typeof data !== "object" || Array.isArray(data)) continue;
-      const formatted = Object.keys(data).map(pkg => {
-        const cur = data[pkg].current || "unknown";
-        const lat = data[pkg].latest || "unknown";
-        let type = "patch";
-        if (!data[pkg].current || data[pkg].current === "MISSING") type = "missing";
-        else if (cur.split(".")[0] !== lat.split(".")[0]) type = "major";
-        else if (cur.split(".")[1] !== lat.split(".")[1]) type = "minor";
-        return { name: pkg, current: cur, latest: lat, type, source: p.name };
-      });
-      dependencies.push(...formatted);
+     let data;
+
+try {
+  let cleanResult = result.trim();
+
+  // 🔥 FIX: handle BOTH object and array JSON
+  const firstChar = cleanResult[0];
+
+  if (firstChar !== "{" && firstChar !== "[") {
+    console.log("[Deps] Invalid JSON format:", p.name);
+    continue;
+  }
+
+  data = JSON.parse(cleanResult);
+
+} catch (e) {
+  console.log("[Deps] Parse error", p.name, e.message);
+  continue;
+}
+      if (!data || typeof data !== "object") continue;
+
+let formatted = [];
+
+if (Array.isArray(data)) {
+  // ✅ Handle array format
+  formatted = data.map(pkg => ({
+    name: pkg.name || "unknown",
+    current: pkg.current || "unknown",
+    latest: pkg.latest || "unknown",
+    type: pkg.type || "patch",
+    source: p.name,
+  }));
+} else {
+  // ✅ Handle object format
+  formatted = Object.keys(data).map(pkg => {
+    const cur = data[pkg].current || "unknown";
+    const lat = data[pkg].latest  || "unknown";
+    let type = "patch";
+
+    if (!data[pkg].current || data[pkg].current === "MISSING") type = "missing";
+    else if (cur.split(".")[0] !== lat.split(".")[0]) type = "major";
+    else if (cur.split(".")[1] !== lat.split(".")[1]) type = "minor";
+
+    return { name: pkg, current: cur, latest: lat, type, source: p.name };
+  });
+}
+dependencies.push(...formatted);
     } catch (err) { console.log("[Deps] Scan error", p.name, err.message); }
   }
 
-  /* ── Security scan ── */
+  /* ── Security scan ── ✅ FIX 4: handles both npm v7+ (via[].title) and npm v6 (advisories) */
   try {
     const raw = await runCommand("npm audit --json", backendPath, 30000);
     if (raw?.trim()) {
       let a;
       try { a = JSON.parse(raw); } catch { a = null; }
       if (a?.vulnerabilities) {
-        security = Object.keys(a.vulnerabilities).map(pkg => ({
-          package: pkg,
-          severity: a.vulnerabilities[pkg].severity || "unknown",
-          issue: a.vulnerabilities[pkg].title || "Security vulnerability",
+        // npm v7+ format — title is inside the via[] array
+        security = Object.keys(a.vulnerabilities).map(pkg => {
+          const vuln = a.vulnerabilities[pkg];
+          const viaObj = Array.isArray(vuln.via)
+            ? vuln.via.find(v => typeof v === "object" && v.title)
+            : null;
+          return {
+            package: pkg,
+            severity: vuln.severity || viaObj?.severity || "unknown",
+            issue: viaObj?.title || vuln.title || `Vulnerability in ${pkg}`,
+          };
+        });
+      } else if (a?.advisories) {
+        // npm v6 format — title is directly on the advisory
+        security = Object.values(a.advisories).map(adv => ({
+          package: adv.module_name,
+          severity: adv.severity || "unknown",
+          issue: adv.title || "Security vulnerability",
         }));
       }
     }
   } catch (err) { console.log("[Security] Scan error:", err.message); }
 
-  /* ── Code scan (ESLint / regex) ── */
+  /* ── Code scan ── */
   try {
     const bs = await runEslint(backendPath, "backend");
     errors.push(...bs.errors); warnings.push(...bs.warnings);
@@ -286,13 +342,21 @@ export const generateSystemReport = async (req, res) => {
       seen.add(k); return true;
     });
   };
-  errors = dedup(errors);
+  errors   = dedup(errors);
   warnings = dedup(warnings);
 
   /* ── Save ── */
+
+  // 🔥 ADD HERE
+console.log("==== FINAL CHECK ====");
+console.log("TYPE:", typeof dependencies);
+console.log("IS ARRAY:", Array.isArray(dependencies));
+console.log("FIRST ITEM:", dependencies[0]);
+
+
   let report;
   try {
-    report = await SystemReport.create({ dependencies, security, errors, warnings });
+    report = await SystemReport.create({ dependencies: JSON.parse(JSON.stringify(dependencies)),  security, errors, warnings });
     console.log(`[Report] Saved ${report._id} — deps:${dependencies.length} sec:${security.length} err:${errors.length} warn:${warnings.length}`);
   } catch (dbErr) {
     console.log("[Report] DB save error:", dbErr.message);
@@ -306,18 +370,26 @@ export const generateSystemReport = async (req, res) => {
     let pdfBuffer = null;
     try { pdfBuffer = await generatePDFBuffer(report); } catch (pe) { console.log("[Mail] PDF gen error:", pe.message); }
     const depH = dependencies.length ? dependencies.map(d => "<li><b>" + d.name + "</b>: " + d.current + " -> " + d.latest + "</li>").join("") : "<li>All up to date</li>";
-    const secH = security.length ? security.map(s => "<li>" + s.package + " - " + s.severity + "</li>").join("") : "<li>No vulnerabilities</li>";
-    const errH = errors.length ? errors.slice(0,20).map(e => "<li>" + e.file + ":" + e.line + " " + e.message + "</li>").join("") : "<li>No errors</li>";
-    const wrnH = warnings.length ? warnings.slice(0,20).map(w => "<li>" + w.file + ":" + w.line + " " + w.message + "</li>").join("") : "<li>No warnings</li>";
-    sendMail(adminEmail, "[StayOS] System Audit Report - " + new Date().toLocaleDateString("en-IN"), "<h2>StayOS System Audit Report</h2><p>Generated: " + new Date().toLocaleString("en-IN") + "</p><p>Full audit PDF is attached.</p><h3>Packages " + dependencies.length + " outdated</h3><ul>" + depH + "</ul><h3>Security " + security.length + " issues</h3><ul>" + secH + "</ul><h3>Errors " + errors.length + "</h3><ul>" + errH + "</ul><h3>Warnings " + warnings.length + "</h3><ul>" + wrnH + "</ul>", pdfBuffer);
+    const secH = security.length    ? security.map(s    => "<li>" + s.package + " - " + s.severity + "</li>").join("") : "<li>No vulnerabilities</li>";
+    const errH = errors.length      ? errors.slice(0,20).map(e  => "<li>" + e.file + ":" + e.line + " " + e.message + "</li>").join("") : "<li>No errors</li>";
+    const wrnH = warnings.length    ? warnings.slice(0,20).map(w => "<li>" + w.file + ":" + w.line + " " + w.message + "</li>").join("") : "<li>No warnings</li>";
+    sendMail(
+      adminEmail,
+      "[StayOS] System Audit Report - " + new Date().toLocaleDateString("en-IN"),
+      `<h2>StayOS System Audit Report</h2>
+       <p>Generated: ${new Date().toLocaleString("en-IN")}</p>
+       <p>Full audit PDF is attached.</p>
+       <h3>Packages — ${dependencies.length} outdated</h3><ul>${depH}</ul>
+       <h3>Security — ${security.length} issues</h3><ul>${secH}</ul>
+       <h3>Errors — ${errors.length}</h3><ul>${errH}</ul>
+       <h3>Warnings — ${warnings.length}</h3><ul>${wrnH}</ul>`,
+      pdfBuffer   // ✅ PDF is now passed and will be attached
+    );
   });
 
   if (res?.status) return res.status(200).send({ success: true, message: "System report generated", report });
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   2. GET LATEST REPORT  GET /latest
-═══════════════════════════════════════════════════════════════════════ */
 export const getLatestReport = async (req, res) => {
   try {
     const report = await SystemReport.findOne().sort({ createdAt: -1 });
@@ -327,9 +399,6 @@ export const getLatestReport = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   3. GET ALL REPORTS  GET /all
-═══════════════════════════════════════════════════════════════════════ */
 export const getAllReports = async (req, res) => {
   try {
     const reports = await SystemReport.find().sort({ createdAt: -1 }).limit(20);
@@ -339,9 +408,6 @@ export const getAllReports = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   4. DOWNLOAD REPORT JSON  GET /download/:id
-═══════════════════════════════════════════════════════════════════════ */
 export const downloadReport = async (req, res) => {
   try {
     const report = req.params.id === "latest"
@@ -357,25 +423,17 @@ export const downloadReport = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   5. GET FILE CONTENT  GET /file-content?file=backend/server.js&line=42
-   Returns the actual file content (with 5 lines of context around the
-   target line) so the frontend can display the real code with
-   the warning/error highlighted.
-═══════════════════════════════════════════════════════════════════════ */
 export const getFileContent = async (req, res) => {
   try {
     const { file, line } = req.query;
     if (!file) return res.status(400).send({ success: false, message: "file param required" });
-
     const absPath = resolveFilePath(file);
     if (!absPath) return res.status(400).send({ success: false, message: "Invalid or unsafe file path" });
     if (!fs.existsSync(absPath)) return res.status(404).send({ success: false, message: "File not found on disk" });
-
     const content = fs.readFileSync(absPath, "utf8");
     const allLines = content.split("\n");
     const targetLine = parseInt(line, 10) || 1;
-    const CONTEXT = 8; // lines before and after
+    const CONTEXT = 8;
     const start = Math.max(0, targetLine - CONTEXT - 1);
     const end   = Math.min(allLines.length, targetLine + CONTEXT);
     const slice = allLines.slice(start, end).map((text, i) => ({
@@ -383,23 +441,12 @@ export const getFileContent = async (req, res) => {
       text,
       isTarget: (start + i + 1) === targetLine,
     }));
-
-    res.status(200).send({
-      success: true,
-      filePath: file,
-      absolutePath: absPath,
-      totalLines: allLines.length,
-      targetLine,
-      lines: slice,
-    });
+    res.status(200).send({ success: true, filePath: file, absolutePath: absPath, totalLines: allLines.length, targetLine, lines: slice });
   } catch (error) {
     res.status(500).send({ success: false, message: "Error reading file", error: error.message });
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   6. APPROVE PACKAGE UPDATE  POST /approve-package
-═══════════════════════════════════════════════════════════════════════ */
 export const approvePackage = async (req, res) => {
   try {
     const { packageName, currentVersion, latestVersion } = req.body;
@@ -424,17 +471,14 @@ export const approvePackage = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   7. VERIFY KEY & APPLY PACKAGE UPDATE  POST /verify-key
-═══════════════════════════════════════════════════════════════════════ */
 export const verifyAndUpdate = async (req, res) => {
   try {
     const { keyId, key } = req.body;
     const pending = await PendingKey.findById(keyId);
-    if (!pending)              return res.status(404).send({ success: false, message: "Key not found" });
-    if (pending.used)          return res.status(400).send({ success: false, message: "Key already used" });
+    if (!pending)                       return res.status(404).send({ success: false, message: "Key not found" });
+    if (pending.used)                   return res.status(400).send({ success: false, message: "Key already used" });
     if (new Date() > pending.expiresAt) return res.status(400).send({ success: false, message: "Key expired" });
-    if (pending.key !== key)   return res.status(400).send({ success: false, message: "Invalid key" });
+    if (pending.key !== key)            return res.status(400).send({ success: false, message: "Invalid key" });
     pending.used = true;
     await pending.save();
     const record = await UpdateHistory.create({
@@ -462,14 +506,11 @@ export const verifyAndUpdate = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   8. APPROVE FIX  POST /approve-fix
-═══════════════════════════════════════════════════════════════════════ */
 export const approveFix = async (req, res) => {
   try {
     const { fixType, targetFile, issueCount } = req.body;
     if (!fixType) return res.status(400).send({ success: false, message: "fixType required" });
-    const targetArg = targetFile && targetFile !== "all" ? `"${targetFile}"` : ".";
+    const targetArg  = targetFile && targetFile !== "all" ? `"${targetFile}"` : ".";
     const fixCommand = `npx --no eslint ${targetArg} --fix --max-warnings=9999`;
     const key = generateKey();
     await PendingKey.updateMany({ type: "issue-fix", fixType, targetFile, used: false }, { used: true });
@@ -492,17 +533,14 @@ export const approveFix = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   9. VERIFY FIX KEY & APPLY  POST /verify-fix
-═══════════════════════════════════════════════════════════════════════ */
 export const verifyAndFix = async (req, res) => {
   try {
     const { keyId, key } = req.body;
     const pending = await PendingKey.findById(keyId);
-    if (!pending)              return res.status(404).send({ success: false, message: "Key not found" });
-    if (pending.used)          return res.status(400).send({ success: false, message: "Key already used" });
+    if (!pending)                       return res.status(404).send({ success: false, message: "Key not found" });
+    if (pending.used)                   return res.status(400).send({ success: false, message: "Key already used" });
     if (new Date() > pending.expiresAt) return res.status(400).send({ success: false, message: "Key expired" });
-    if (pending.key !== key)   return res.status(400).send({ success: false, message: "Invalid key" });
+    if (pending.key !== key)            return res.status(400).send({ success: false, message: "Invalid key" });
     pending.used = true;
     await pending.save();
     let fixOutput = "";
@@ -540,9 +578,6 @@ export const verifyAndFix = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   10. GET UPDATE HISTORY  GET /update-history
-═══════════════════════════════════════════════════════════════════════ */
 export const getUpdateHistory = async (req, res) => {
   try {
     const updates = await UpdateHistory.find().sort({ createdAt: -1 }).limit(50);
@@ -552,9 +587,6 @@ export const getUpdateHistory = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   11. GET SETTINGS  GET /settings
-═══════════════════════════════════════════════════════════════════════ */
 export const getSettings = async (req, res) => {
   try {
     let settings = await SystemSettings.findOne();
@@ -565,9 +597,6 @@ export const getSettings = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   12. SAVE SETTINGS & RESTART CRON  POST /settings
-═══════════════════════════════════════════════════════════════════════ */
 export const saveSettings = async (req, res) => {
   try {
     const { intervalDays, adminEmail } = req.body;
@@ -584,10 +613,6 @@ export const saveSettings = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   13. RUN NOW  POST /run-now
-   Triggers a full audit scan immediately (same as cron but on-demand).
-═══════════════════════════════════════════════════════════════════════ */
 export const runNow = async (req, res) => {
   // Respond immediately, run in background
   res.status(200).send({ success: true, message: "Audit started — check back in a few seconds." });
@@ -598,11 +623,6 @@ export const runNow = async (req, res) => {
   }
 };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   14. RUN IN 10 MINUTES  POST /run-in-10
-   Schedules a single audit run 10 minutes from now without changing
-   the recurring cron schedule.
-═══════════════════════════════════════════════════════════════════════ */
 export const runInTen = async (req, res) => {
   try {
     const runAt = new Date(Date.now() + 10 * 60 * 1000);
