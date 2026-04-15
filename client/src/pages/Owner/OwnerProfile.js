@@ -27,7 +27,7 @@ const OwnerProfile = () => {
           }
         }
       } catch (error) {
-        console.log("Error loading photo:", error);
+        console.error("Error loading photo:", error);
         // Don't show error toast, just use fallback avatar
       } finally {
         setPhotoLoading(false);

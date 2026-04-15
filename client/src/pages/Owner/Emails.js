@@ -972,7 +972,7 @@ const Emails = () => {
       const { data } = await axios.get("http://localhost:8083/api/v1/hostel/my-emails");
       if (data.success) setEmails(data.emails);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     } finally {
       setLoading(false);
     }

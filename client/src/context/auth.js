@@ -9,23 +9,34 @@ const AuthProvider = ({ children }) => {
     token: "",
   });
 
-  const [loading, setLoading] = useState(true); // ✅ IMPORTANT
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const data = localStorage.getItem("auth");
 
     if (data) {
-      const parsed = JSON.parse(data);
-      setAuth({
-        user: parsed.user,
-        token: parsed.token,
-      });
+      let parsed = null;
 
-      axios.defaults.headers.common["Authorization"] =
-        `Bearer ${parsed.token}`;
+      // ✅ SAFE JSON.parse
+      try {
+        parsed = JSON.parse(data);
+      } catch (err) {
+        console.error("Invalid auth data in localStorage");
+        localStorage.removeItem("auth"); // optional cleanup
+      }
+
+      if (parsed) {
+        setAuth({
+          user: parsed.user,
+          token: parsed.token,
+        });
+
+        axios.defaults.headers.common["Authorization"] =
+          `Bearer ${parsed.token}`;
+      }
     }
 
-    setLoading(false); // ✅ auth restored
+    setLoading(false);
   }, []);
 
   return (

@@ -422,7 +422,7 @@ export const getHostelWiseOccupancyController = async (req, res) => {
       data,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
       message: "Error fetching hostel wise occupancy",
@@ -459,7 +459,7 @@ export const addOwnerEmailController = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
       message: "Error connecting email",
@@ -495,7 +495,7 @@ export const toggleEmailReaderController = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
       message: "Error in toggling email reader",
@@ -514,7 +514,7 @@ export const getAllOwnerEmailsController = async (req, res) => {
       data,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
     });
@@ -549,7 +549,7 @@ export const toggleGlobalEmailSystem = async (req, res) => {
     });
 
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({
       success: false,
       message: "Error toggling global email system",

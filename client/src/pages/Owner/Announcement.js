@@ -28,7 +28,7 @@ const Announcement = () => {
         setAnnouncements(data.announcements);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

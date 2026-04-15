@@ -5,12 +5,10 @@ import { useAuth } from "../../context/auth";
 import "react-toastify/dist/ReactToastify.css";
 import { Building2, X, Menu, Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 import axios from "axios";
-import { useTheme } from "../../context/theme";
 
 const Dashboard = () => {
   const [auth] = useAuth();
   const [showAttendance, setShowAttendance] = useState(false);
-  const { studentColor } = useTheme();
   const [attendance, setAttendance] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -66,7 +64,7 @@ const Dashboard = () => {
       setAnnouncements(data.announcements);
     }
   } catch (error) {
-    console.log("Announcement fetch error", error);
+    console.error("Announcement fetch error", error);
   }
 };
 

@@ -4,6 +4,8 @@ import {
   getLatestReport,
   getAllReports,
   downloadReport,
+  downloadPDF,
+  getLiveHealth,
   getFileContent,
   approvePackage,
   verifyAndUpdate,
@@ -23,9 +25,15 @@ const router = express.Router();
 router.post("/generate-report",  requireSignIn, isAdmin, generateSystemReport);
 router.get("/latest",            requireSignIn, isAdmin, getLatestReport);
 router.get("/all",               requireSignIn, isAdmin, getAllReports);
-router.get("/download/:id",      requireSignIn, isAdmin, downloadReport);
 
-// ── File content viewer (for "view file" on issues)
+// ── Downloads (JSON + PDF)
+router.get("/download/:id",      requireSignIn, isAdmin, downloadReport);    // JSON
+router.get("/download-pdf/:id",  requireSignIn, isAdmin, downloadPDF);       // PDF ← NEW
+
+// ── Live system health (no stored report — real-time OS metrics)
+router.get("/live-health",       requireSignIn, isAdmin, getLiveHealth);     // ← NEW
+
+// ── File content viewer
 router.get("/file-content",      requireSignIn, isAdmin, getFileContent);
 
 // ── Package approval (2-step)

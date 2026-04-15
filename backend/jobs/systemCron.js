@@ -1,25 +1,38 @@
 import cron from "node-cron";
-import { generateSystemReport } from "../controllers/systemReportController.js";
+import { runFullAudit } from "../controllers/systemReportController.js";
 import { SystemSettings } from "../models/systemReportModel.js";
 
 let currentTask = null;
+let isRunning   = false; // ← lock: prevents overlapping cron runs
 
 const runReport = async () => {
-  console.log(`[Cron] Running scheduled audit — ${new Date().toLocaleString("en-IN")}`);
-  await generateSystemReport(
-    { user: { role: "admin", name: "cron" } },
-    { status: () => ({ send: (d) => console.log("[Cron] Report result:", d.success ? "OK" : d.message) }) }
-  );
+  if (isRunning) {
+    console.log("[Cron] Audit already running — skipping this tick");
+    return;
+  }
+  isRunning = true;
+  console.log(`[Cron] Starting scheduled audit — ${new Date().toLocaleString("en-IN")}`);
+  try {
+    const report = await runFullAudit("cron");
+    console.log(`[Cron] Audit complete — healthScore: ${report.systemHealth?.healthScore ?? "?"}`);
+  } catch (err) {
+    console.log("[Cron] Audit error:", err.message);
+  } finally {
+    isRunning = false;
+  }
 };
 
-export const restartCron = (expression) => {
+export const restartCron = (expression, timezone = "Asia/Kolkata") => {
   if (!cron.validate(expression)) {
     console.log("[Cron] Invalid expression:", expression);
     return;
   }
-  if (currentTask) { currentTask.stop(); currentTask.destroy(); }
-  currentTask = cron.schedule(expression, runReport, { timezone: "Asia/Kolkata" });
-  console.log(`[Cron] Scheduled: "${expression}"`);
+  if (currentTask) {
+    currentTask.stop();
+    try { currentTask.destroy(); } catch {}
+  }
+  currentTask = cron.schedule(expression, runReport, { timezone });
+  console.log(`[Cron] Scheduled: "${expression}" (tz: ${timezone})`);
 };
 
 export const initCron = async () => {
@@ -27,11 +40,16 @@ export const initCron = async () => {
     let settings = await SystemSettings.findOne();
     if (!settings) {
       settings = await SystemSettings.create({
-        intervalDays: 15, adminEmail: process.env.ADMIN_EMAIL || "", cronExpression: "0 2 */15 * *",
+        intervalDays:    15,
+        adminEmail:      process.env.ADMIN_EMAIL || "",
+        cronExpression:  "0 2 */15 * *",
+        timezone:        "Asia/Kolkata",
       });
     }
-    restartCron(settings.cronExpression || "0 2 */15 * *");
-    console.log(`[Cron] Initialized: every ${settings.intervalDays} days`);
+    const expr = settings.cronExpression || "0 2 */15 * *";
+    const tz   = settings.timezone       || "Asia/Kolkata";
+    restartCron(expr, tz);
+    console.log(`[Cron] Initialized — every ${settings.intervalDays} days (${tz})`);
   } catch (err) {
     console.log("[Cron] Init fallback:", err.message);
     restartCron("0 2 */15 * *");

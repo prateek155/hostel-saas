@@ -48,7 +48,7 @@ export const ThemeProvider = ({ children }) => {
         localStorage.setItem("studentTheme", st);
       }
     } catch (err) {
-      console.log("Theme fetch error:", err.response?.data || err.message);
+      console.error("Theme fetch error:", err.response?.data || err.message);
     }
   };
 

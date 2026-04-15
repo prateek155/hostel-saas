@@ -7,7 +7,7 @@ export const getVehiclesController = async (req, res) => {
   try {
     if (!req.user.vehicleAccess) {
       return res.status(403).json({
-        success: false,
+        success: false, 
         message: "Vehicle access not enabled",
       });
     }

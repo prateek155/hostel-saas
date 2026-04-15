@@ -143,7 +143,7 @@ const AdminDashboard = () => {
       }
     );
 
-    console.log("HOSTEL DISTRIBUTION API:", res.data); // 🔴 ADD THIS
+    console.error("HOSTEL DISTRIBUTION API:", res.data); // 🔴 ADD THIS
 
     if (res.data?.success) {
       const formattedData = res.data.data.map(item => ({

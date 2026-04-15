@@ -44,7 +44,7 @@ export const createAnnouncement = async (req, res) => {
         `,
       });
     } else {
-      console.log("⚠️ No valid student emails found");
+      console.error("⚠️ No valid student emails found");
     }
 
     res.status(201).json({

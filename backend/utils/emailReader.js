@@ -11,26 +11,26 @@ const emailReader = async () => {
     try {
       owners = await ownerEmailModel.find();
     } catch (dbError) {
-      console.log("❌ DB Error:", dbError.message);
+      console.error("❌ DB Error:", dbError.message);
       return;
     }
 
     if (!owners || owners.length === 0) {
-      console.log("⚠️ No owner email configs found.");
+      console.error("⚠️ No owner email configs found.");
       return;
     }
 
     const globalStatus = owners[0]?.emailSystemEnabled;
-    console.log("🌐 GLOBAL STATUS:", globalStatus);
+    console.error("🌐 GLOBAL STATUS:", globalStatus);
 
     if (!globalStatus) {
-      console.log("⛔ Email system is OFF");
+      console.error("⛔ Email system is OFF");
       return;
     }
 
     for (let owner of owners) {
       if (!owner.emailReaderEnabled) {
-        console.log(`⛔ Reader OFF for: ${owner.email}`);
+        console.error(`⛔ Reader OFF for: ${owner.email}`);
         continue;
       }
 
@@ -51,7 +51,7 @@ const emailReader = async () => {
           },
         };
 
-        console.log("📩 Connecting to:", owner.email);
+        console.error("📩 Connecting to:", owner.email);
 
         connection = await imaps.connect(config);
 
@@ -62,7 +62,7 @@ const emailReader = async () => {
           markSeen: false,
         });
 
-        console.log(`📬 ${messages.length} emails for ${owner.email}`);
+        console.error(`📬 ${messages.length} emails for ${owner.email}`);
 
         const limitedMessages = messages.slice(0, 10);
 
@@ -86,7 +86,7 @@ const emailReader = async () => {
             });
 
             if (exists) {
-              console.log("⚠️ Duplicate skipped:", subject);
+              console.error("⚠️ Duplicate skipped:", subject);
               continue;
             }
 
@@ -98,31 +98,31 @@ const emailReader = async () => {
               date,
             });
 
-            console.log("✅ Saved:", subject);
+            console.error("✅ Saved:", subject);
 
             await connection.addFlags(item.attributes.uid, ["\\Seen"]);
 
           } catch (emailError) {
-            console.log("❌ Email process error:", emailError.message);
+            console.error("❌ Email process error:", emailError.message);
           }
         }
 
       } catch (error) {
-        console.log(`❌ IMAP error (${owner.email}):`, error.message);
+        console.error(`❌ IMAP error (${owner.email}):`, error.message);
       } finally {
         // 🔥 ALWAYS close connection safely
         if (connection) {
           try {
             connection.end();
           } catch (e) {
-            console.log("⚠️ Connection close error:", e.message);
+            console.error("⚠️ Connection close error:", e.message);
           }
         }
       }
     }
 
   } catch (err) {
-    console.log("❌ emailReader global error:", err.message);
+    console.error("❌ emailReader global error:", err.message);
   }
 };
 
