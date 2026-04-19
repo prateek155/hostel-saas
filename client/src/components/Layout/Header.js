@@ -85,7 +85,7 @@ const Header = ({ currentTheme = 'default', setCurrentTheme, sidebarOpen, setSid
   const getDashboardRoute = () => {
     if (!auth?.user) return "/login";
     switch (auth.user.role) {
-      case "admin": return "/dashboard/admin";
+      case "admin": return "https://hostelwers.onrender.com/dashboard/admin";
       case "owner": return "/dashboard/owner";
       case "student": return "/dashboard/student";
       default: return "/login";
