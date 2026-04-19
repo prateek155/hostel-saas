@@ -377,7 +377,7 @@ const AdminProfile = () => {
   const updateTheme = async (type, value) => {
     setUpdatingTheme(type);
     try {
-      await axios.put("http://localhost:8083/api/v1/settings/" + type + "-theme", { theme: value });
+      await axios.put("https://hostelwers.onrender.com/api/v1/settings/" + type + "-theme", { theme: value });
       if (type === "owner") setOwnerTheme(value);
       else setStudentTheme(value);
     } catch (err) {
@@ -392,7 +392,7 @@ const AdminProfile = () => {
   const fetchSettings = useCallback(async () => {
     setSettingsLoading(true);
     try {
-      const { data } = await axios.get('http://localhost:8083/api/v1/settings');
+      const { data } = await axios.get('https://hostelwers.onrender.com/api/v1/settings');
       if (data.success && data.data) {
         const d = data.data;
         setStudentStates({
@@ -430,7 +430,7 @@ const AdminProfile = () => {
     }
     setUpdatingControl(controlId);
     try {
-      await axios.put('http://localhost:8083' + endpoint);
+      await axios.put('https://hostelwers.onrender.com' + endpoint);
       setStudentStates(prev => ({ ...prev, [controlId]: !prev[controlId] }));
     } catch (err) {
       console.error('Failed to toggle', controlId, err);
@@ -443,7 +443,7 @@ const AdminProfile = () => {
   const toggleMaintenanceMode = async () => {
     setUpdatingControl('maintenance_mode');
     try {
-      const { data } = await axios.put('http://localhost:8083/api/v1/settings/maintenance-mode');
+      const { data } = await axios.put('https://hostelwers.onrender.com/api/v1/settings/maintenance-mode');
       setGlobalStates(prev => ({ ...prev, maintenance_mode: data.maintenanceMode }));
     } catch (err) {
       console.error('Failed to toggle maintenance mode:', err);
@@ -456,7 +456,7 @@ const AdminProfile = () => {
   const toggleGlobalEmail = async () => {
     setGlobalEmailLoading(true);
     try {
-      const res = await axios.post('http://localhost:8083/api/v1/admin/toggle-global-email');
+      const res = await axios.post('https://hostelwers.onrender.com/api/v1/admin/toggle-global-email');
       setGlobalEmailOn(res.data.status);
     } catch {
       setGlobalEmailOn(prev => !prev); // optimistic fallback
@@ -467,7 +467,7 @@ const AdminProfile = () => {
 
   const getEmailUsers = useCallback(async () => {
     try {
-      const { data } = await axios.get('http://localhost:8083/api/v1/admin/owner-emails');
+      const { data } = await axios.get('https://hostelwers.onrender.com/api/v1/admin/owner-emails');
       if (data.success) setEmailUsers(data.data);
     } catch {
       setEmailUsers([]);
@@ -477,7 +477,7 @@ const AdminProfile = () => {
   const toggleEmailReader = async (ownerId) => {
     setTogglingIds(prev => new Set([...prev, ownerId]));
     try {
-      await axios.post('http://localhost:8083/api/v1/admin/toggle-email-reader', { ownerId });
+      await axios.post('https://hostelwers.onrender.com/api/v1/admin/toggle-email-reader', { ownerId });
       await getEmailUsers();
     } catch {
       setEmailUsers(prev => prev.map(u => u.ownerId?._id === ownerId ? { ...u, emailReaderEnabled: !u.emailReaderEnabled } : u));

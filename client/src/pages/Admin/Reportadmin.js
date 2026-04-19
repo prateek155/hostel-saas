@@ -22,7 +22,7 @@ const themes = {
 };
 
 const PIE_COLORS = ["#3b82f6","#10b981","#f59e0b","#8b5cf6","#f43f5e","#06b6d4"];
-const BASE = "http://localhost:8083/api/v1";
+const BASE = "https://hostelwers.onrender.com/api/v1";
 
 /* ── Occupancy Ring ── */
 const OccupancyRing = ({ pct=0, color, size=72 }) => {

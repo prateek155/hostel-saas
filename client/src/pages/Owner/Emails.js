@@ -812,7 +812,7 @@ const ReplyPanel = ({ email, open, onDiscard, onSent }) => {
     if (!body.trim()) return;
     setSending(true);
     try {
-      await axios.post("http://localhost:8083/api/v1/hostel/send-email", {
+      await axios.post("https://hostelwers.onrender.com/api/v1/hostel/send-email", {
         to:      email.from,
         subject: `Re: ${email.subject}`,
         message: body.trim(),
@@ -969,7 +969,7 @@ const Emails = () => {
 
   const getEmails = async () => {
     try {
-      const { data } = await axios.get("http://localhost:8083/api/v1/hostel/my-emails");
+      const { data } = await axios.get("https://hostelwers.onrender.com/api/v1/hostel/my-emails");
       if (data.success) setEmails(data.emails);
     } catch (err) {
       console.error(err);

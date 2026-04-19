@@ -15,7 +15,7 @@ const OwnerProfile = () => {
       try {
         if (auth?.user?._id) {
           const response = await axios.get(
-            `http://localhost:8083/api/v1/admin/owner-photo/${auth.user._id}`,
+            `https://hostelwers.onrender.com/api/v1/admin/owner-photo/${auth.user._id}`,
             {
               responseType: 'blob'
             }

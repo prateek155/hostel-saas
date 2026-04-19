@@ -12,7 +12,7 @@ export default function OwnerRoute() {
     const authCheck = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8083/api/v1/auth/owner-auth",
+          "https://hostelwers.onrender.com/api/v1/auth/owner-auth",
           {
             headers: {
               Authorization: `Bearer ${auth?.token}`, // ✅ REQUIRED

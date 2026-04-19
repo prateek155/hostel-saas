@@ -91,7 +91,7 @@ const Setemail = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/admin/get-all-owners",
+        "https://hostelwers.onrender.com/api/v1/admin/get-all-owners",
         { headers: { Authorization: `Bearer ${auth?.token}` } }
       );
       if (data.success) {
@@ -121,7 +121,7 @@ const Setemail = () => {
     try {
       setSubmitting(true);
       const { data } = await axios.post(
-        "http://localhost:8083/api/v1/admin/connect-email",
+        "https://hostelwers.onrender.com/api/v1/admin/connect-email",
         { ownerId, email, appPassword },
         { headers: { Authorization: `Bearer ${auth?.token}` } }
       );
@@ -747,7 +747,7 @@ const Setemail = () => {
                       <div style={styles.ownerPreview}>
                         <div style={styles.ownerAvatar}>
                           <img
-                            src={`http://localhost:8083/api/v1/admin/owner-photo/${selectedOwner._id}`}
+                            src={`https://hostelwers.onrender.com/api/v1/admin/owner-photo/${selectedOwner._id}`}
                             alt={selectedOwner.name}
                             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
                             onError={(e) => { e.target.style.display = "none"; }}
@@ -925,7 +925,7 @@ const Setemail = () => {
                               <div style={styles.userCell}>
                                 <div style={styles.avatar}>
                                   <img
-                                    src={`http://localhost:8083/api/v1/admin/owner-photo/${owner._id}`}
+                                    src={`https://hostelwers.onrender.com/api/v1/admin/owner-photo/${owner._id}`}
                                     alt={owner.name}
                                     style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "9px" }}
                                     onError={(e) => { e.target.style.display = "none"; }}

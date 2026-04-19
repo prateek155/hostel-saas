@@ -272,7 +272,7 @@ const Rooms = () => {
   /* fetch */
   const fetchRooms = async () => {
     try {
-      const res = await axios.get("http://localhost:8083/api/v1/room/my-rooms", {
+      const res = await axios.get("https://hostelwers.onrender.com/api/v1/room/my-rooms", {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       if (res.data.success) {
@@ -289,7 +289,7 @@ const Rooms = () => {
     e.preventDefault(); 
     try {
       const res = await axios.post(
-        "http://localhost:8083/api/v1/room/create-room",
+        "https://hostelwers.onrender.com/api/v1/room/create-room",
         { floor: Number(form.floor), roomNumber: form.roomNumber, totalBeds: Number(form.totalBeds), type: form.type },
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );

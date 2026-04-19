@@ -29,7 +29,7 @@ const [statsLoading, setStatsLoading] = useState(false);
   try {
     setStatsLoading(true);
 
-    const res = await fetch("http://localhost:8083/api/v1/hostel/dashboard-stats", {
+    const res = await fetch("https://hostelwers.onrender.com/api/v1/hostel/dashboard-stats", {
       headers: {
         Authorization: `Bearer ${auth?.token}`,
       },

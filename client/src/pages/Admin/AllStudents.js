@@ -88,7 +88,7 @@ const AllStudents = () => {
   const getAllOwners = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8083/api/v1/admin/get-all-owners",
+        "https://hostelwers.onrender.com/api/v1/admin/get-all-owners",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -109,7 +109,7 @@ const AllStudents = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/student/admin/all-students",
+        "https://hostelwers.onrender.com/api/v1/student/admin/all-students",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -138,7 +138,7 @@ const AllStudents = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `http://localhost:8083/api/v1/student/admin/students/${ownerId}`,
+        `https://hostelwers.onrender.com/api/v1/student/admin/students/${ownerId}`,
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

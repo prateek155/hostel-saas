@@ -26,7 +26,7 @@ const Students = () => {
   const fetchStudents = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/student/my-students",
+        "https://hostelwers.onrender.com/api/v1/student/my-students",
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       if (data.success) setStudents(data.students);
@@ -41,7 +41,7 @@ const Students = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post(
-        "http://localhost:8083/api/v1/student/add-student",
+        "https://hostelwers.onrender.com/api/v1/student/add-student",
         form,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
@@ -58,7 +58,7 @@ const Students = () => {
   const handleUpdateStudent = async () => {
     try {
       const { data } = await axios.put(
-        `http://localhost:8083/api/v1/student/update-student/${editStudent._id}`,
+        `https://hostelwers.onrender.com/api/v1/student/update-student/${editStudent._id}`,
         { name: editStudent.name, phone: editStudent.phone, gardianemail: editStudent.gardianemail, gardianphone: editStudent.gardianphone, leaveDate: editStudent.leaveDate, studentStatus: editStudent.studentStatus },
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
@@ -76,7 +76,7 @@ const Students = () => {
     if (!window.confirm("Are you sure you want to delete this student?")) return;
     try {
       await axios.delete(
-        `http://localhost:8083/api/v1/student/delete-student/${id}`,
+        `https://hostelwers.onrender.com/api/v1/student/delete-student/${id}`,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       toast.success("Student deleted");

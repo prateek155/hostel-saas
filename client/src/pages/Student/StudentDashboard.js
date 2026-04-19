@@ -28,7 +28,7 @@ const Dashboard = () => {
   const fetchMyAttendance = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/attandance/my-attendance",
+        "https://hostelwers.onrender.com/api/v1/attandance/my-attendance",
         {
           headers: { Authorization: `Bearer ${auth.token}` },
           params: {
@@ -52,7 +52,7 @@ const Dashboard = () => {
   const getAnnouncements = async () => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8083/api/v1/announcement/all",
+      "https://hostelwers.onrender.com/api/v1/announcement/all",
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,

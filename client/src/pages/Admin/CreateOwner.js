@@ -112,7 +112,7 @@ const CreateOwner = () => {
     }
 
     const res = await axios.post(
-      "http://localhost:8083/api/v1/admin/create-owner",
+      "https://hostelwers.onrender.com/api/v1/admin/create-owner",
       formData,
       {
         headers: {
@@ -136,7 +136,7 @@ const CreateOwner = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/admin/get-all-owners",
+        "https://hostelwers.onrender.com/api/v1/admin/get-all-owners",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -159,7 +159,7 @@ const CreateOwner = () => {
 const deactivateOwner = async (ownerId) => {
   try {
     const res = await axios.put(
-      `http://localhost:8083/api/v1/admin/deactivate-owner/${ownerId}`,
+      `https://hostelwers.onrender.com/api/v1/admin/deactivate-owner/${ownerId}`,
       {},
       {
         headers: {
@@ -180,7 +180,7 @@ const deactivateOwner = async (ownerId) => {
 const activateOwner = async (ownerId) => {
   try {
     const res = await axios.put(
-      `http://localhost:8083/api/v1/admin/activate-owner/${ownerId}`,
+      `https://hostelwers.onrender.com/api/v1/admin/activate-owner/${ownerId}`,
       {},
       {
         headers: {
@@ -203,7 +203,7 @@ const activateOwner = async (ownerId) => {
 const toggleVehicleAccess = async (ownerId) => {
   try {
     const res = await axios.put(
-      `http://localhost:8083/api/v1/admin/toggle-vehicle-access/${ownerId}`,
+      `https://hostelwers.onrender.com/api/v1/admin/toggle-vehicle-access/${ownerId}`,
       {},
       {
         headers: {
@@ -1107,7 +1107,7 @@ const toggleVehicleAccess = async (ownerId) => {
                               <div style={styles.userCell}>
                                 <div style={styles.avatar}>
                                   <img
-                                  src={`http://localhost:8083/api/v1/admin/owner-photo/${owner._id}`}
+                                  src={`https://hostelwers.onrender.com/api/v1/admin/owner-photo/${owner._id}`}
                                   alt={owner.name}
                                   style={{
                                   width: "100%",

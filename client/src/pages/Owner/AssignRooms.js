@@ -24,7 +24,7 @@ const AssignRoom = () => {
   const loadStudents = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8083/api/v1/student/unassigned",
+        "https://hostelwers.onrender.com/api/v1/student/unassigned",
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       setStudents(res.data.students);
@@ -37,7 +37,7 @@ const AssignRoom = () => {
   const loadAssignedStudents = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8083/api/v1/student/assigned-students",
+        "https://hostelwers.onrender.com/api/v1/student/assigned-students",
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       setAssignedStudents(res.data.students);
@@ -50,7 +50,7 @@ const AssignRoom = () => {
   const loadRooms = async (roomType) => {
     try {
       const res = await axios.get(
-        `http://localhost:8083/api/v1/room/available/${roomType}`,
+        `https://hostelwers.onrender.com/api/v1/room/available/${roomType}`,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       setRooms(res.data.rooms);
@@ -99,7 +99,7 @@ const AssignRoom = () => {
 
     try {
       await axios.post(
-        "http://localhost:8083/api/v1/room/assign-room",
+        "https://hostelwers.onrender.com/api/v1/room/assign-room",
         data,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );

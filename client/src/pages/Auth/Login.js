@@ -71,7 +71,7 @@ const handleSubmit = async (e) => {
     /* ================= TRY STUDENT LOGIN ================= */
     try {
       const studentRes = await axios.post(
-        "http://localhost:8083/api/v1/student/login",
+        "https://hostelwers.onrender.com/api/v1/student/login",
         { email, password }
       );
 
@@ -103,7 +103,7 @@ return; // 🔴 STOP HERE
     /* ================= TRY OWNER / ADMIN LOGIN ================= */
     try {
       const res = await axios.post(
-        "http://localhost:8083/api/v1/auth/login",
+        "https://hostelwers.onrender.com/api/v1/auth/login",
         { email, password }
       );
 

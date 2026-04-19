@@ -20,7 +20,7 @@ const DailyMenu = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/mess/menu",
+        "https://hostelwers.onrender.com/api/v1/mess/menu",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

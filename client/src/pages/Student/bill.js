@@ -12,7 +12,7 @@ const StudentFees = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:8083/api/v1/fees/download/${month}`,
+        `https://hostelwers.onrender.com/api/v1/fees/download/${month}`,
         {
           headers: { Authorization: `Bearer ${auth.token}` },
           responseType: "blob",

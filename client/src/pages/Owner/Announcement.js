@@ -16,7 +16,7 @@ const Announcement = () => {
   const getAnnouncements = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/announcement/all",
+        "https://hostelwers.onrender.com/api/v1/announcement/all",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -51,7 +51,7 @@ const Announcement = () => {
       if (editingId) {
         // ✏️ UPDATE
         const { data } = await axios.put(
-          `http://localhost:8083/api/v1/announcement/update/${editingId}`,
+          `https://hostelwers.onrender.com/api/v1/announcement/update/${editingId}`,
           { title, message },
           {
             headers: {
@@ -66,7 +66,7 @@ const Announcement = () => {
       } else {
         // ➕ CREATE
         const { data } = await axios.post(
-          "http://localhost:8083/api/v1/announcement/create",
+          "https://hostelwers.onrender.com/api/v1/announcement/create",
           { title, message },
           {
             headers: {
@@ -96,7 +96,7 @@ const Announcement = () => {
   const handleDelete = async (id) => {
     try {
       const { data } = await axios.delete(
-        `http://localhost:8083/api/v1/announcement/delete/${id}`,
+        `https://hostelwers.onrender.com/api/v1/announcement/delete/${id}`,
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

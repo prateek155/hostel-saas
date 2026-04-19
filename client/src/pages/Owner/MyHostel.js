@@ -25,7 +25,7 @@ const MyHostel = () => {
   const getMyHostel = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/hostel/my-hostel",
+        "https://hostelwers.onrender.com/api/v1/hostel/my-hostel",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -58,7 +58,7 @@ const MyHostel = () => {
   const updateMyHostel = async (updatedData) => {
   try {
     const { data } = await axios.put(
-      "http://localhost:8083/api/v1/hostel/update-my-hostel",
+      "https://hostelwers.onrender.com/api/v1/hostel/update-my-hostel",
       updatedData,
       {
         headers: {

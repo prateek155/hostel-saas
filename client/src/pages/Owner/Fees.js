@@ -45,7 +45,7 @@ const Fees = () => {
       setLoading(true);
 
       const res = await axios.get(
-        "http://localhost:8083/api/v1/fees/by-month",
+        "https://hostelwers.onrender.com/api/v1/fees/by-month",
         {
           params: { month: fullMonth },
           headers: { Authorization: `Bearer ${auth.token}` },
@@ -68,7 +68,7 @@ const Fees = () => {
 
     try {
       await axios.post(
-        "http://localhost:8083/api/v1/fees/generate",
+        "https://hostelwers.onrender.com/api/v1/fees/generate",
         { month: fullMonth },
         {
           headers: { Authorization: `Bearer ${auth.token}` },
@@ -90,7 +90,7 @@ const Fees = () => {
   const markPaid = async (feeId) => {
     try {
       await axios.put(
-        `http://localhost:8083/api/v1/fees/mark-paid/${feeId}`,
+        `https://hostelwers.onrender.com/api/v1/fees/mark-paid/${feeId}`,
         { paymentMode: "Cash" },
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );

@@ -3,7 +3,7 @@ import axios from "axios";
 import AdminMenu from "../../components/Layout/AdminMenu";
 import Header from "../../components/Layout/Header";
 
-const API_BASE = "http://localhost:8083/api/v1/system";
+const API_BASE = "https://hostelwers.onrender.com/api/v1/system";
 
 /* ══════════════════════════════════════════════════════════════
    THEME DEFINITIONS

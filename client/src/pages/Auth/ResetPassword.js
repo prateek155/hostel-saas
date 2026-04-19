@@ -30,7 +30,7 @@ const ResetPassword = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `http://localhost:8083/api/v1/auth/reset-password/${token}`,
+        `https://hostelwers.onrender.com/api/v1/auth/reset-password/${token}`,
         { password }
       );
       toast.success(res.data.message || "Password reset successful!");

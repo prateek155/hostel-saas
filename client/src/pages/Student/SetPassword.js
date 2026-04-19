@@ -13,7 +13,7 @@ const SetPassword = () => {
 
     try {
       const { data } = await axios.post(
-        `http://localhost:8083/api/v1/student/set-password/${token}`,
+        `https://hostelwers.onrender.com/api/v1/student/set-password/${token}`,
         { password }
       );
 

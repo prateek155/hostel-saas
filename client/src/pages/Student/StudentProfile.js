@@ -19,7 +19,7 @@ const StudentProfile = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/student/profile",
+        "https://hostelwers.onrender.com/api/v1/student/profile",
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
       setStudent(res.data.student);
@@ -41,7 +41,7 @@ const StudentProfile = () => {
   const handleUpdateProfile = async () => {
     try {
       await axios.put(
-        "http://localhost:8083/api/v1/student/profile",
+        "https://hostelwers.onrender.com/api/v1/student/profile",
         editData,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
@@ -56,7 +56,7 @@ const StudentProfile = () => {
   const loadPayments = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8083/api/v1/fees/my-payments",
+        "https://hostelwers.onrender.com/api/v1/fees/my-payments",
         {
           headers: { Authorization: `Bearer ${auth.token}` },
         }
@@ -71,7 +71,7 @@ const StudentProfile = () => {
   const downloadBill = async (month) => {
     try {
       const res = await axios.get(
-        `http://localhost:8083/api/v1/fees/download/${month}`,
+        `https://hostelwers.onrender.com/api/v1/fees/download/${month}`,
         {
           headers: { Authorization: `Bearer ${auth.token}` },
           responseType: "blob",

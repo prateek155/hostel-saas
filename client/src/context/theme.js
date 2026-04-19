@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children }) => {
       if (!auth?.token) return;
 
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/settings",
+        "https://hostelwers.onrender.com/api/v1/settings",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

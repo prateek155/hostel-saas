@@ -46,7 +46,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 // 🔒 Middlewares
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || "http://localhost:3000"],
+  origin: [process.env.FRONTEND_URL || "https://hostelwers.onrender.com"],
   credentials: true,
 }));
 

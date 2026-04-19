@@ -27,7 +27,7 @@ const CreateHostel = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8083/api/v1/hostel/create-hostel",
+        "https://hostelwers.onrender.com/api/v1/hostel/create-hostel",
         {
           name: data.name,
           address: data.address,

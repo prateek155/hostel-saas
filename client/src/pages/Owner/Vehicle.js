@@ -25,7 +25,7 @@ const Vehicle = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/vehicle/owner",
+        "https://hostelwers.onrender.com/api/v1/vehicle/owner",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

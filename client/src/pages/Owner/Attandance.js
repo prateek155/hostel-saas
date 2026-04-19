@@ -61,7 +61,7 @@ const selectedMonthValue =
   const loadStudents = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/student/assigned-students",
+        "https://hostelwers.onrender.com/api/v1/student/assigned-students",
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
 
@@ -85,7 +85,7 @@ const selectedMonthValue =
   const loadAttendanceByDate = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:8083/api/v1/attandance/by-date?date=${selectedDate}`,
+        `https://hostelwers.onrender.com/api/v1/attandance/by-date?date=${selectedDate}`,
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
 
@@ -111,9 +111,9 @@ const loadAttendanceByFilters = async () => {
     let url = "";
 
     if (selectedMonthValue && !fromDate && !toDate) {
-      url = `http://localhost:8083/api/v1/attandance/by-month?month=${selectedMonthValue}`;
+      url = `https://hostelwers.onrender.com/api/v1/attandance/by-month?month=${selectedMonthValue}`;
     } else if (fromDate && toDate) {
-      url = `http://localhost:8083/api/v1/attandance/by-range?from=${fromDate}&to=${toDate}`;
+      url = `https://hostelwers.onrender.com/api/v1/attandance/by-range?from=${fromDate}&to=${toDate}`;
     } else {
       return;
     }
@@ -164,7 +164,7 @@ useEffect(() => {
 
     try {
       await axios.post(
-        "http://localhost:8083/api/v1/attandance/mark",
+        "https://hostelwers.onrender.com/api/v1/attandance/mark",
         {
           studentId: student._id,
           hostelId: student.hostelId,
@@ -184,7 +184,7 @@ useEffect(() => {
   const lockAttendance = async () => {
     try {
       await axios.post(
-        "http://localhost:8083/api/v1/attandance/lock",
+        "https://hostelwers.onrender.com/api/v1/attandance/lock",
         { date: selectedDate },
         { headers: { Authorization: `Bearer ${auth.token}` } }
       );
@@ -204,7 +204,7 @@ const openStudent = async (row) => {
   setSelectedStudent(row.studentId);
 
   try {
-    let baseUrl = `http://localhost:8083/api/v1/attandance/student/${row.studentId._id}`;
+    let baseUrl = `https://hostelwers.onrender.com/api/v1/attandance/student/${row.studentId._id}`;
     let url = baseUrl;
 
     // ✅ PRIORITY 1: Date Range
@@ -246,7 +246,7 @@ const downloadPDF = async () => {
   if (!selectedStudent) return;
 
   try {
-    let url = `http://localhost:8083/api/v1/attandance/student-pdf/${selectedStudent._id}`;
+    let url = `https://hostelwers.onrender.com/api/v1/attandance/student-pdf/${selectedStudent._id}`;
 
     if (selectedMonthValue) {
       url += `?month=${selectedMonthValue}`;

@@ -91,7 +91,7 @@ const AllHostels = () => {
   const fetchHostels = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8083/api/v1/hostel/all-hostels",
+        "https://hostelwers.onrender.com/api/v1/hostel/all-hostels",
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -112,7 +112,7 @@ const AllHostels = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8083/api/v1/hostel/hostel/${id}`,
+        `https://hostelwers.onrender.com/api/v1/hostel/hostel/${id}`,
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,

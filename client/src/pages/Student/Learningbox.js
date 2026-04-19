@@ -35,7 +35,7 @@ const Learningbox = () => {
     const loadItems = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8083/api/v1/learning/all-notes`,
+          `https://hostelwers.onrender.com/api/v1/learning/all-notes`,
           { headers: { Authorization: `Bearer ${auth.token}` } }
         );
         const data = await response.json();
@@ -100,7 +100,7 @@ const Learningbox = () => {
 
   const createNewItem = async () => {
     try {
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes`, {
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` },
         body: JSON.stringify({ content: '' }),
@@ -119,7 +119,7 @@ const Learningbox = () => {
 
   const saveItems = async (itemId, content, linkPreviews = {}) => {
     try {
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes/${itemId}`, {
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` },
         body: JSON.stringify({ content, linkPreviews }),
@@ -278,7 +278,7 @@ const Learningbox = () => {
   const handleDeleteItem = async (id) => {
     try {
       if (items.length === 1) await createNewItem();
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${auth.token}` } });
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${auth.token}` } });
       const data = await response.json();
       if (data.success) {
         const updatedItems = items.filter(item => item._id !== id);
@@ -296,7 +296,7 @@ const Learningbox = () => {
   const handleMakePrivate = async (id) => {
     const item = items.find(i => i._id === id);
     try {
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isPrivate: !item.isPrivate }) });
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isPrivate: !item.isPrivate }) });
       const data = await response.json();
       if (data.success) setItems(items.map(i => i._id === id ? data.note : i));
     } catch (error) { console.error('Failed to update privacy:', error); }
@@ -306,7 +306,7 @@ const Learningbox = () => {
   const handleArchive = async (id) => {
     const item = items.find(i => i._id === id);
     try {
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isArchived: !item.isArchived }) });
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isArchived: !item.isArchived }) });
       const data = await response.json();
       if (data.success) setItems(items.map(i => i._id === id ? data.note : i));
     } catch (error) { console.error('Failed to archive:', error); }
@@ -316,7 +316,7 @@ const Learningbox = () => {
   const handleFullWidth = async (id) => {
     const item = items.find(i => i._id === id);
     try {
-      const response = await fetch(`http://localhost:8083/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isFullWidth: !item.isFullWidth }) });
+      const response = await fetch(`https://hostelwers.onrender.com/api/v1/learning/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ isFullWidth: !item.isFullWidth }) });
       const data = await response.json();
       if (data.success) setItems(items.map(i => i._id === id ? data.note : i));
     } catch (error) { console.error('Failed to update width:', error); }

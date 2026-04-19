@@ -95,7 +95,7 @@ const AdminDashboard = () => {
     try {
       setStatsLoading(true);
       const res = await axios.get(
-        "http://localhost:8083/api/v1/admin/dashboard-stats",
+        "https://hostelwers.onrender.com/api/v1/admin/dashboard-stats",
         {
           headers: {
             Authorization: `Bearer ${auth?.token}`,
@@ -116,7 +116,7 @@ const AdminDashboard = () => {
   const getAllStudents = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8083/api/v1/student/admin/all-students",
+        "https://hostelwers.onrender.com/api/v1/student/admin/all-students",
         {
           headers: {
             Authorization: `Bearer ${auth?.token}`,
@@ -135,7 +135,7 @@ const AdminDashboard = () => {
   const getHostelDistribution = async () => {
   try {
     const res = await axios.get(
-      "http://localhost:8083/api/v1/admin/hostel-distribution",
+      "https://hostelwers.onrender.com/api/v1/admin/hostel-distribution",
       {
         headers: {
           Authorization: `Bearer ${auth?.token}`,
@@ -162,7 +162,7 @@ setHostelTypeData(formattedData);
 const getHostelWiseOccupancy = async (type = "") => {
   try {
     const res = await axios.get(
-      `http://localhost:8083/api/v1/admin/hostel-wise-occupancy?type=${type}`,
+      `https://hostelwers.onrender.com/api/v1/admin/hostel-wise-occupancy?type=${type}`,
       {
         headers: {
           Authorization: `Bearer ${auth?.token}`,
